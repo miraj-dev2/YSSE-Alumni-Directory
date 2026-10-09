@@ -1,0 +1,97 @@
+@import './styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+
+  /* Accessible focus indicators with accent color */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Button Hierarchy (8px radius, min-height 44px, no heavy shadows) */
+  .btn-base {
+    @apply inline-flex items-center justify-center font-medium rounded-md px-4 text-sm transition-colors duration-150 select-none disabled:opacity-40 disabled:pointer-events-none;
+    min-height: 44px;
+  }
+
+  .btn-primary {
+    @apply btn-base bg-accent text-on-accent font-semibold hover:bg-accent-hover active:bg-accent-active;
+  }
+
+  .btn-secondary {
+    @apply btn-base bg-surface text-text border border-border-strong hover:bg-surface-hover hover:border-border;
+  }
+
+  .btn-tertiary {
+    @apply inline-flex items-center gap-1.5 text-sm text-muted hover:text-text transition-colors p-1 rounded-sm;
+  }
+
+  .btn-danger {
+    @apply btn-base bg-status-rejected-bg text-status-rejected border border-status-rejected hover:opacity-90;
+  }
+
+  /* Chip labels (only element with 999px radius) */
+  .chip {
+    @apply inline-flex items-center gap-1 text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-chip border;
+  }
+
+  /* Card styling with flat surfaces separated by 1px borders */
+  .surface-card {
+    @apply bg-surface border border-border rounded-card transition-colors duration-150;
+  }
+
+  /* Inputs and selects */
+  .input-base {
+    @apply w-full px-3.5 py-2.5 bg-surface text-text placeholder-muted border border-border-strong rounded-md text-sm focus:border-accent focus:ring-1 focus:ring-accent transition-colors;
+    min-height: 44px;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
