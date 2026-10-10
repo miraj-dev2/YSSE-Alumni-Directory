@@ -1,82 +1,93 @@
 import { useState, useEffect, useCallback } from 'react';
-import { DashboardStats, ChartBarData, AlumniProfile, SessionRequest } from '../types/admin';
+import { DashboardStats, GrowthPoint, WingDonutPoint, AlumniProfile } from '../types/admin';
 import { dashboardApi } from '../api/dashboardApi';
 import { alumniApi } from '../api/alumniApi';
 
 export const useDashboard = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [batchData, setBatchData] = useState<ChartBarData[]>([]);
-  const [wingData, setWingData] = useState<ChartBarData[]>([]);
-  const [needsReview, setNeedsReview] = useState<AlumniProfile[]>([]);
-  const [recentSessions, setRecentSessions] = useState<SessionRequest[]>([]);
+  const [growthData, setGrowthData] = useState<GrowthPoint[]>([]);
+  const [growthInterval, setGrowthInterval] = useState<'yearly' | 'monthly'>('yearly');
+  const [wingData, setWingData] = useState<WingDonutPoint[]>([]);
+  const [directoryItems, setDirectoryItems] = useState<AlumniProfile[]>([]);
+  const [activeTab, setActiveTab] = useState<'Directory' | 'Approvals' | 'Sessions'>('Directory');
+  const [openToSessionsOnly, setOpenToSessionsOnly] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [actionInProgressId, setActionInProgressId] = useState<string | null>(null);
 
   const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [s, batches, wings, review, sessions] = await Promise.all([
+      const [s, g, w] = await Promise.all([
         dashboardApi.getDashboardStats(),
-        dashboardApi.getBatchDistribution(),
+        dashboardApi.getAlumniGrowth(growthInterval),
         dashboardApi.getWingDistribution(),
-        dashboardApi.getNeedsReviewList(),
-        dashboardApi.getRecentSessionRequests(),
       ]);
       setStats(s);
-      setBatchData(batches);
-      setWingData(wings);
-      setNeedsReview(review);
-      setRecentSessions(sessions);
+      setGrowthData(g);
+      setWingData(w);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
+      setError(err instanceof Error ? err.message : 'Failed to load metrics');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [growthInterval]);
+
+  const fetchDirectoryItems = useCallback(async () => {
+    try {
+      let statusFilter: string | undefined = undefined;
+      if (activeTab === 'Approvals') statusFilter = 'PENDING';
+      const res = await alumniApi.getAlumniList({
+        page: 1,
+        pageSize: 10,
+        status: statusFilter,
+        openToSessionsOnly: openToSessionsOnly || undefined,
+      });
+      setDirectoryItems(res.data);
+    } catch {
+      // Fallback
+    }
+  }, [activeTab, openToSessionsOnly]);
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  const handleApprove = async (id: string) => {
-    setActionInProgressId(id);
-    try {
-      await alumniApi.approveAlumnus(id);
-      await fetchDashboardData();
-      return true;
-    } catch {
-      return false;
-    } finally {
-      setActionInProgressId(null);
-    }
+  useEffect(() => {
+    fetchDirectoryItems();
+  }, [fetchDirectoryItems]);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   };
 
-  const handleReject = async (id: string, reason: string) => {
-    setActionInProgressId(id);
-    try {
-      await alumniApi.rejectAlumnus(id, reason);
-      await fetchDashboardData();
-      return true;
-    } catch {
-      return false;
-    } finally {
-      setActionInProgressId(null);
-    }
+  const toggleSelectAll = () => {
+    if (selectedIds.size === directoryItems.length) setSelectedIds(new Set());
+    else setSelectedIds(new Set(directoryItems.map((i) => i.id)));
   };
 
   return {
     stats,
-    batchData,
+    growthData,
+    growthInterval,
+    setGrowthInterval,
     wingData,
-    needsReview,
-    recentSessions,
+    directoryItems,
+    activeTab,
+    setActiveTab,
+    openToSessionsOnly,
+    setOpenToSessionsOnly,
+    selectedIds,
+    toggleSelect,
+    toggleSelectAll,
     isLoading,
     error,
-    actionInProgressId,
     retry: fetchDashboardData,
-    approveAlumnus: handleApprove,
-    rejectAlumnus: handleReject,
   };
 };

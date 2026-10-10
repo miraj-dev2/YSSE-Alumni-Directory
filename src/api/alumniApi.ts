@@ -27,6 +27,9 @@ export const alumniApi = {
     if (query.status && query.status !== 'all') {
       list = list.filter((a) => a.status === query.status);
     }
+    if (query.openToSessionsOnly) {
+      list = list.filter((a) => a.openToSessions);
+    }
     if (query.sortBy) {
       const field = query.sortBy;
       const order = query.sortOrder === 'desc' ? -1 : 1;

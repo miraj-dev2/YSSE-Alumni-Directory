@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { UserPlus } from 'lucide-react';
 import { useAlumniAdmin } from '../../hooks/useAlumniAdmin';
 import { useToast } from '../../context/ToastContext';
 import { AlumniProfile } from '../../types/admin';
-import { AdminHeader } from '../../components/admin/AdminHeader';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { AlumniFilters } from '../../components/admin/AlumniFilters';
 import { AlumniTable } from '../../components/admin/AlumniTable';
 import { AlumniPagination } from '../../components/admin/AlumniPagination';
@@ -13,10 +11,7 @@ import { ConfirmDialog } from '../../components/common/ConfirmDialog';
 import { EmptyState } from '../../components/common/EmptyState';
 import { TableRowSkeleton, ErrorState } from '../../components/common/SkeletonLoader';
 
-interface OutletContextType { onOpenMobileMenu: () => void; }
-
 export const AdminAlumniPage: React.FC = () => {
-  const { onOpenMobileMenu } = useOutletContext<OutletContextType>();
   const {
     query, items, total, totalPages, isLoading, error, updateQuery,
     toggleSort, createAlumnus, updateAlumnus, deleteAlumnus, exportCsv, retry,
@@ -39,7 +34,7 @@ export const AdminAlumniPage: React.FC = () => {
         success('Alumnus Updated', `${values.name}'s profile was updated.`);
       } else {
         await createAlumnus(values);
-        success('Alumnus Added', `${values.name} has been added to the directory.`);
+        success('Alumnus Added', `${values.name} has been enrolled.`);
       }
       setFormModalOpen(false);
     } catch {
@@ -61,53 +56,49 @@ export const AdminAlumniPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <AdminHeader
-        title="Alumni Directory Management"
-        subtitle="Search, filter, edit and maintain all registered YSSE fellows"
-        onOpenMobileMenu={onOpenMobileMenu}
-        primaryAction={
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="min-h-[44px] px-4 rounded bg-[#B7FF72] text-[#18251D] text-xs font-semibold flex items-center gap-2 hover:opacity-90"
-          >
-            <UserPlus className="w-4 h-4" /> <span>Add Alumnus</span>
-          </button>
-        }
+      <AdminPageHeader
+        title="Alumni Directory"
+        subtitle="Search, filter, edit and maintain all registered YSSE fellows."
+        showPeriodFilter={false}
+        onAddAlumnus={handleOpenAdd}
       />
 
-      <AlumniFilters query={query} onUpdateQuery={updateQuery} onExportCsv={exportCsv} />
+      <div className="space-y-5">
+        <AlumniFilters query={query} onUpdateQuery={updateQuery} onExportCsv={exportCsv} />
 
-      {isLoading ? (
-        <div className="space-y-2"><TableRowSkeleton /><TableRowSkeleton /><TableRowSkeleton /></div>
-      ) : error ? (
-        <ErrorState title="Failed to Load Alumni" message={error} onRetry={retry} />
-      ) : items.length === 0 ? (
-        <EmptyState
-          title="No alumni match your criteria"
-          description="Try clearing some search terms or resetting filters to find members."
-          actionText="Reset Search"
-          onAction={() => updateQuery({ search: '', batch: 'all', wing: 'all', status: 'all' })}
-        />
-      ) : (
-        <>
-          <AlumniTable
-            items={items}
-            sortBy={query.sortBy}
-            sortOrder={query.sortOrder}
-            onSort={toggleSort}
-            onEdit={handleOpenEdit}
-            onDelete={(item) => setDeletingItem(item)}
-          />
-          <AlumniPagination
-            page={query.page}
-            pageSize={query.pageSize}
-            total={total}
-            totalPages={totalPages}
-            onPageChange={(page) => updateQuery({ page })}
-          />
-        </>
-      )}
+        <div className="bg-[#1F3027] border border-[#2E4336] rounded-[22px] p-6 space-y-4">
+          {isLoading ? (
+            <div className="space-y-2"><TableRowSkeleton /><TableRowSkeleton /><TableRowSkeleton /></div>
+          ) : error ? (
+            <ErrorState title="Failed to Load Alumni" message={error} onRetry={retry} />
+          ) : items.length === 0 ? (
+            <EmptyState
+              title="No alumni match your criteria"
+              description="Try clearing search terms or resetting filters."
+              actionText="Reset Search"
+              onAction={() => updateQuery({ search: '', batch: 'all', wing: 'all', status: 'all' })}
+            />
+          ) : (
+            <>
+              <AlumniTable
+                items={items}
+                sortBy={query.sortBy}
+                sortOrder={query.sortOrder}
+                onSort={toggleSort}
+                onEdit={handleOpenEdit}
+                onDelete={(item) => setDeletingItem(item)}
+              />
+              <AlumniPagination
+                page={query.page}
+                pageSize={query.pageSize}
+                total={total}
+                totalPages={totalPages}
+                onPageChange={(page) => updateQuery({ page })}
+              />
+            </>
+          )}
+        </div>
+      </div>
 
       <AlumniFormModal
         isOpen={formModalOpen}

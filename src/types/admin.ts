@@ -1,5 +1,4 @@
 // Strict TypeScript domain models for YSSE Admin Panel
-
 export type AlumniStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface AlumniProfile {
@@ -14,11 +13,11 @@ export interface AlumniProfile {
   linkedinUrl: string;
   photoUrl?: string;
   isContactPublic: boolean;
+  openToSessions: boolean;
   status: AlumniStatus;
   rejectionReason?: string;
   submittedAt?: string;
   updatedAt?: string;
-  openToSessions?: boolean;
 }
 
 export type SessionStatus = 'PENDING' | 'ACCEPTED' | 'DONE';
@@ -48,14 +47,26 @@ export interface AdminUser {
 
 export interface DashboardStats {
   totalAlumni: number;
-  pendingApprovals: number;
   openToSessions: number;
+  pendingApprovals: number;
   sessionRequests: number;
+}
+
+export interface GrowthPoint {
+  period: string;
+  count: number;
 }
 
 export interface ChartBarData {
   label: string;
   count: number;
+}
+
+export interface WingDonutPoint {
+  wing: string;
+  count: number;
+  percentage: number;
+  color: string;
 }
 
 export interface PaginatedAlumniQuery {
@@ -67,6 +78,7 @@ export interface PaginatedAlumniQuery {
   sortOrder?: 'asc' | 'desc';
   page: number;
   pageSize: number;
+  openToSessionsOnly?: boolean;
 }
 
 export interface PaginatedResponse<T> {

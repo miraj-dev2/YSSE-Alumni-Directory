@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { useApprovals } from '../../hooks/useApprovals';
 import { useToast } from '../../context/ToastContext';
 import { AlumniProfile } from '../../types/admin';
-import { AdminHeader } from '../../components/admin/AdminHeader';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
 import { ApprovalsTabs } from '../../components/admin/ApprovalsTabs';
 import { ApprovalsBulkBar } from '../../components/admin/ApprovalsBulkBar';
 import { ApprovalsTable } from '../../components/admin/ApprovalsTable';
@@ -12,10 +11,7 @@ import { ReasonDialog } from '../../components/common/ReasonDialog';
 import { EmptyState } from '../../components/common/EmptyState';
 import { TableRowSkeleton, ErrorState } from '../../components/common/SkeletonLoader';
 
-interface OutletContextType { onOpenMobileMenu: () => void; refreshPendingCount?: () => void; }
-
 export const AdminApprovalsPage: React.FC = () => {
-  const { onOpenMobileMenu, refreshPendingCount } = useOutletContext<OutletContextType>();
   const {
     activeTab, setActiveTab, items, selectedIds, isLoading, isSubmitting, error,
     toggleSelect, toggleSelectAll, approveSingle, rejectSingle, approveBulk, rejectBulk, retry,
@@ -31,7 +27,7 @@ export const AdminApprovalsPage: React.FC = () => {
     if (!confirmApproveId) return;
     const ok = await approveSingle(confirmApproveId);
     setConfirmApproveId(null);
-    if (ok) { success('Submission Approved', 'Profile published.'); refreshPendingCount?.(); }
+    if (ok) success('Submission Approved', 'Profile published.');
     else toastError('Approval Failed', 'Rolled back changes.');
   };
 
@@ -39,59 +35,61 @@ export const AdminApprovalsPage: React.FC = () => {
     if (!rejectItem) return;
     const ok = await rejectSingle(rejectItem.id, reason);
     setRejectItem(null);
-    if (ok) { success('Submission Rejected', 'Marked rejected.'); refreshPendingCount?.(); }
+    if (ok) success('Submission Rejected', 'Marked rejected.');
     else toastError('Rejection Failed', 'Rolled back changes.');
   };
 
   const handleBulkApprove = async () => {
     setIsBulkApproveOpen(false);
     const ok = await approveBulk();
-    if (ok) { success('Bulk Approved', 'Selected applicants approved.'); refreshPendingCount?.(); }
+    if (ok) success('Bulk Approved', 'Selected applicants approved.');
     else toastError('Bulk Action Failed', 'Could not complete approval.');
   };
 
   const handleBulkReject = async (reason: string) => {
     setIsBulkRejectOpen(false);
     const ok = await rejectBulk(reason);
-    if (ok) { success('Bulk Rejected', 'Selected profiles rejected.'); refreshPendingCount?.(); }
+    if (ok) success('Bulk Rejected', 'Selected profiles rejected.');
     else toastError('Bulk Action Failed', 'Could not complete rejection.');
   };
 
   return (
     <div className="space-y-6">
-      <AdminHeader
+      <AdminPageHeader
         title="Member Submissions & Approvals"
-        subtitle="Verify tenure and batch authenticity for incoming alumni records"
-        onOpenMobileMenu={onOpenMobileMenu}
+        subtitle="Verify cohort authenticity and role details for incoming alumni profiles."
+        showPeriodFilter={false}
       />
 
-      <ApprovalsTabs activeTab={activeTab} onChangeTab={setActiveTab} counts={{ [activeTab]: items.length }} />
+      <div className="bg-[#1F3027] border border-[#2E4336] rounded-[22px] p-6 space-y-5">
+        <ApprovalsTabs activeTab={activeTab} onChangeTab={setActiveTab} counts={{ [activeTab]: items.length }} />
 
-      <ApprovalsBulkBar
-        selectedCount={selectedIds.size}
-        onApproveAll={() => setIsBulkApproveOpen(true)}
-        onRejectAll={() => setIsBulkRejectOpen(true)}
-        onClearSelection={() => toggleSelectAll()}
-        isSubmitting={isSubmitting}
-      />
-
-      {isLoading ? (
-        <div className="space-y-2"><TableRowSkeleton /><TableRowSkeleton /><TableRowSkeleton /></div>
-      ) : error ? (
-        <ErrorState title="Error Loading Approvals" message={error} onRetry={retry} />
-      ) : items.length === 0 ? (
-        <EmptyState title={`No ${activeTab.toLowerCase()} profiles found`} description="No submissions in this category." />
-      ) : (
-        <ApprovalsTable
-          items={items}
-          selectedIds={selectedIds}
-          onToggleSelect={toggleSelect}
-          onToggleSelectAll={toggleSelectAll}
-          onApproveSingle={(id) => setConfirmApproveId(id)}
-          onRejectSingle={(item) => setRejectItem(item)}
+        <ApprovalsBulkBar
+          selectedCount={selectedIds.size}
+          onApproveAll={() => setIsBulkApproveOpen(true)}
+          onRejectAll={() => setIsBulkRejectOpen(true)}
+          onClearSelection={() => toggleSelectAll()}
           isSubmitting={isSubmitting}
         />
-      )}
+
+        {isLoading ? (
+          <div className="space-y-2"><TableRowSkeleton /><TableRowSkeleton /><TableRowSkeleton /></div>
+        ) : error ? (
+          <ErrorState title="Error Loading Approvals" message={error} onRetry={retry} />
+        ) : items.length === 0 ? (
+          <EmptyState title={`No ${activeTab.toLowerCase()} profiles found`} description="No submissions in this category." />
+        ) : (
+          <ApprovalsTable
+            items={items}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onToggleSelectAll={toggleSelectAll}
+            onApproveSingle={(id) => setConfirmApproveId(id)}
+            onRejectSingle={(item) => setRejectItem(item)}
+            isSubmitting={isSubmitting}
+          />
+        )}
+      </div>
 
       <ConfirmDialog
         isOpen={!!confirmApproveId}

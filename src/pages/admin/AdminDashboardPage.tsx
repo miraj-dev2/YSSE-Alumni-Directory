@@ -1,134 +1,128 @@
-import React from 'react';
-import { useOutletContext, Link } from 'react-router-dom';
-import { UserCheck, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useToast } from '../../context/ToastContext';
-import { AdminHeader } from '../../components/admin/AdminHeader';
-import { DashboardTiles } from '../../components/admin/DashboardTiles';
-import { DashboardCharts } from '../../components/admin/DashboardCharts';
-import { DashboardNeedsReview } from '../../components/admin/DashboardNeedsReview';
-import { DashboardRecentSessions } from '../../components/admin/DashboardRecentSessions';
-import { CardSkeleton, TileSkeleton, ErrorState } from '../../components/common/SkeletonLoader';
-
-interface OutletContextType {
-  onOpenMobileMenu: () => void;
-  refreshPendingCount?: () => void;
-}
+import { AlumniProfile } from '../../types/admin';
+import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
+import { DashboardStatCards } from '../../components/admin/DashboardStatCards';
+import { DashboardDirectoryCard } from '../../components/admin/DashboardDirectoryCard';
+import { AlumniGrowthChart } from '../../components/charts/AlumniGrowthChart';
+import { AlumniWingDonut } from '../../components/charts/AlumniWingDonut';
+import { AlumniFormModal } from '../../components/admin/AlumniFormModal';
+import { alumniApi } from '../../api/alumniApi';
+import { TileSkeleton, ErrorState } from '../../components/common/SkeletonLoader';
 
 export const AdminDashboardPage: React.FC = () => {
-  const { onOpenMobileMenu, refreshPendingCount } = useOutletContext<OutletContextType>();
+  const navigate = useNavigate();
   const {
-    stats,
-    batchData,
-    wingData,
-    needsReview,
-    recentSessions,
-    isLoading,
-    error,
-    actionInProgressId,
-    retry,
-    approveAlumnus,
-    rejectAlumnus,
+    stats, growthData, growthInterval, setGrowthInterval, wingData, directoryItems,
+    activeTab, setActiveTab, openToSessionsOnly, setOpenToSessionsOnly,
+    selectedIds, toggleSelect, toggleSelectAll, isLoading, error, retry,
   } = useDashboard();
+
   const { success, error: toastError } = useToast();
+  const [formModalOpen, setFormModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<AlumniProfile | null>(null);
+  const [period, setPeriod] = useState('This month');
 
-  const handleApprove = async (id: string) => {
-    const ok = await approveAlumnus(id);
-    if (ok) {
-      success('Alumnus Approved', 'Profile is now published to the public directory.');
-      refreshPendingCount?.();
-    } else {
-      toastError('Approval Failed', 'Unable to update status. Please try again.');
-    }
-    return ok;
+  const handleOpenAdd = () => {
+    setEditingItem(null);
+    setFormModalOpen(true);
   };
 
-  const handleReject = async (id: string, reason: string) => {
-    const ok = await rejectAlumnus(id, reason);
-    if (ok) {
-      success('Alumnus Rejected', 'Submission updated with secretariat notes.');
-      refreshPendingCount?.();
-    } else {
-      toastError('Rejection Failed', 'Unable to record rejection.');
+  const handleFormSubmit = async (values: any) => {
+    try {
+      if (editingItem) {
+        await alumniApi.updateAlumnus(editingItem.id, values);
+        success('Profile Updated', `${values.name}'s details saved.`);
+      } else {
+        await alumniApi.createAlumnus(values);
+        success('Alumnus Added', `${values.name} enrolled into directory.`);
+      }
+      setFormModalOpen(false);
+      retry();
+    } catch {
+      toastError('Save Error', 'Could not save alumnus profile.');
     }
-    return ok;
   };
 
-  if (isLoading) {
+  const handleBulkAction = () => {
+    success('Bulk Selected', `Processing batch operations for ${selectedIds.size} alumni.`);
+  };
+
+  if (isLoading || !stats) {
     return (
-      <div className="space-y-6">
-        <AdminHeader
-          title="Executive Dashboard"
-          subtitle="Real-time status overview of YSSE alumni community"
-          onOpenMobileMenu={onOpenMobileMenu}
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-7">
+        <AdminPageHeader onAddAlumnus={handleOpenAdd} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
           <TileSkeleton /><TileSkeleton /><TileSkeleton /><TileSkeleton />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <CardSkeleton /><CardSkeleton />
         </div>
       </div>
     );
   }
 
-  if (error || !stats) {
+  if (error) {
     return (
-      <div className="space-y-6">
-        <AdminHeader
-          title="Executive Dashboard"
-          subtitle="Real-time status overview of YSSE alumni community"
-          onOpenMobileMenu={onOpenMobileMenu}
-        />
-        <ErrorState
-          title="Unable to load dashboard data"
-          message={error || 'An unexpected error occurred while fetching metrics.'}
-          onRetry={retry}
-        />
+      <div className="space-y-7">
+        <AdminPageHeader onAddAlumnus={handleOpenAdd} />
+        <ErrorState title="Failed to load dashboard metrics" message={error} onRetry={retry} />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <AdminHeader
-        title="Executive Dashboard"
-        subtitle="Real-time status overview of YSSE alumni community"
-        onOpenMobileMenu={onOpenMobileMenu}
-        primaryAction={
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={retry}
-              className="p-2 text-[#9DB0A2] hover:text-[#EEF3E8] bg-[#1F3027] border border-[#2E4336] rounded min-h-[44px] min-w-[44px] flex items-center justify-center"
-              aria-label="Refresh dashboard metrics"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-            <Link
-              to="/admin/approvals"
-              className="min-h-[44px] px-4 rounded bg-[#B7FF72] text-[#18251D] text-xs font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity"
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>Review Submissions ({stats.pendingApprovals})</span>
-            </Link>
-          </div>
-        }
+    <div className="space-y-7">
+      <AdminPageHeader
+        name="Rashidul"
+        period={period}
+        onPeriodChange={setPeriod}
+        onAddAlumnus={handleOpenAdd}
       />
 
-      <DashboardTiles stats={stats} />
+      <DashboardStatCards stats={stats} />
 
-      <DashboardCharts batchData={batchData} wingData={wingData} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Directory Card (~70% width) */}
+        <div className="lg:col-span-8">
+          <DashboardDirectoryCard
+            items={directoryItems}
+            activeTab={activeTab}
+            onTabChange={(tab) => {
+              if (tab === 'Approvals') navigate('/admin/approvals');
+              else if (tab === 'Sessions') navigate('/admin/sessions');
+              else setActiveTab(tab);
+            }}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+            onToggleSelectAll={toggleSelectAll}
+            openToSessionsOnly={openToSessionsOnly}
+            onToggleOpenToSessions={setOpenToSessionsOnly}
+            onViewAlumnus={(item) => navigate(`/alumni/${item.id}`)}
+            onEditAlumnus={(item) => {
+              setEditingItem(item);
+              setFormModalOpen(true);
+            }}
+            onBulkAction={handleBulkAction}
+          />
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <DashboardNeedsReview
-          items={needsReview}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          actionInProgressId={actionInProgressId}
-        />
-        <DashboardRecentSessions sessions={recentSessions} />
+        {/* Right Column: Growth & Wing Charts (~30% width) */}
+        <div className="lg:col-span-4 space-y-6">
+          <AlumniGrowthChart
+            data={growthData}
+            interval={growthInterval}
+            onIntervalChange={setGrowthInterval}
+          />
+          <AlumniWingDonut data={wingData} />
+        </div>
       </div>
+
+      <AlumniFormModal
+        isOpen={formModalOpen}
+        onClose={() => setFormModalOpen(false)}
+        onSubmit={handleFormSubmit}
+        initialData={editingItem}
+      />
     </div>
   );
 };
