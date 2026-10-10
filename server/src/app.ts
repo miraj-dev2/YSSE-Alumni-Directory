@@ -52,6 +52,9 @@ app.get('/health', (_req, res) => {
 
 // Mount modules on both /api and root paths
 const apiRouter = express.Router();
+apiRouter.get('/health', (_req, res) => {
+  ok(res, { status: 'healthy', timestamp: new Date().toISOString() });
+});
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/alumni', alumniRouter);
 apiRouter.use('/sessions', sessionsRouter);
