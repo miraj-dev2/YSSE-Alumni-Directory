@@ -9,6 +9,12 @@ export default {
     extend: {
       colors: {
         bg: 'var(--bg)',
+        ground: 'var(--ground)',
+        lines: 'var(--lines)',
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+          bg: 'var(--destructive-bg)',
+        },
         surface: {
           DEFAULT: 'var(--surface)',
           hover: 'var(--surface-hover)',

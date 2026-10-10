@@ -2,23 +2,28 @@
 :root {
   /* Core brand palette */
   --bg: #18251D;
+  --ground: #18251D;
   --surface: #1F3027;
+  --input-bg: #1F3027;
   --surface-hover: #263A30;
   --surface-active: #2D4438;
   --border: #2E4336;
+  --lines: #2E4336;
   --border-strong: #3B5244;
   --text: #EEF3E8;
   --muted: #9DB0A2;
   --accent: #B7FF72;
   --on-accent: #18251D;
+  --destructive: #E8A598;
+  --destructive-bg: rgba(232, 165, 152, 0.12);
 
-  /* Desaturated status tones sitting naturally with dark green */
+  /* Status tones sitting naturally with dark green */
   --status-pending: #C2A24D;
   --status-pending-bg: rgba(194, 162, 77, 0.12);
-  --status-approved: #52B788;
-  --status-approved-bg: rgba(82, 183, 136, 0.12);
-  --status-rejected: #C86D6D;
-  --status-rejected-bg: rgba(200, 109, 109, 0.12);
+  --status-approved: #B7FF72;
+  --status-approved-bg: rgba(183, 255, 114, 0.12);
+  --status-rejected: #E8A598;
+  --status-rejected-bg: rgba(232, 165, 152, 0.12);
   --status-done: #6C9BCF;
   --status-done-bg: rgba(108, 155, 207, 0.12);
 

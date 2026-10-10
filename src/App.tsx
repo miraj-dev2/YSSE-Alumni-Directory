@@ -6,6 +6,7 @@ import { ToastProvider } from './context/ToastContext';
 import { RootLayout } from './layouts/RootLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { ProtectedRoute } from './components/shared/ProtectedRoute';
+import { AdminRoute } from './routes/AdminRoute';
 
 // Public & User Pages
 const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
@@ -83,9 +84,9 @@ export const App: React.FC = () => {
                 <Route
                   path="/admin"
                   element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminRoute>
                       <AdminLayout />
-                    </ProtectedRoute>
+                    </AdminRoute>
                   }
                 >
                   <Route index element={<AdminDashboardPage />} />
