@@ -21,11 +21,12 @@ import {
   Check,
   X,
   CheckCircle,
+  Info,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const SessionsPage: React.FC = () => {
-  const { user, role, setIsRoleSelectorOpen } = useAuth();
+  const { user, role, openAuthModal } = useAuth();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
 
@@ -152,6 +153,27 @@ export const SessionsPage: React.FC = () => {
       {/* Tab 1: Browse Offers */}
       {activeTab === 'offers' && (
         <div className="space-y-6">
+          {/* Alumni Policy Banner */}
+          {role === 'alumni' && (
+            <div className="p-4 bg-surface-active/60 border border-accent/30 rounded-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-text block">You are browsing as an Alumni</span>
+                  <span className="text-muted leading-relaxed">
+                    Alumni offer mentorship sessions directly to YSSE members and interns. You cannot request sessions from fellow alumni.
+                  </span>
+                </div>
+              </div>
+              <Link
+                to="/me"
+                className="btn-secondary !min-h-[36px] h-[36px] text-xs px-3 whitespace-nowrap shrink-0"
+              >
+                Offer Sessions in My Profile →
+              </Link>
+            </div>
+          )}
+
           {/* Filters: topic search + format select */}
           <div className="bg-surface border border-border rounded-card p-4 flex flex-col sm:flex-row items-center gap-3">
             <div className="flex-1 w-full">
@@ -216,16 +238,22 @@ export const SessionsPage: React.FC = () => {
                     <Link to={`/alumni/${mentor.id}`} className="text-xs text-muted hover:text-text">
                       Profile
                     </Link>
-                    <button
-                      onClick={() => {
-                        if (role === 'visitor') setIsRoleSelectorOpen(true);
-                        else setSelectedMentor(mentor);
-                      }}
-                      className="btn-primary !min-h-[38px] h-[38px] text-xs px-3.5 gap-1.5"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" />
-                      <span>Book Session</span>
-                    </button>
+                    {role === 'alumni' ? (
+                      <span className="text-[11px] font-mono text-muted py-1.5 px-2.5 rounded bg-surface-hover border border-border">
+                        Member-Only
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          if (role === 'visitor') openAuthModal('login');
+                          else setSelectedMentor(mentor);
+                        }}
+                        className="btn-primary !min-h-[38px] h-[38px] text-xs px-3.5 gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Book Session</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -254,14 +282,46 @@ export const SessionsPage: React.FC = () => {
                 Sign in to View Your Requests
               </h2>
               <p className="text-xs text-muted">
-                Log in as a verified member or alumni to see your mentorship booking records.
+                Log in as a member or register to view and manage your mentorship booking records.
               </p>
-              <button
-                onClick={() => setIsRoleSelectorOpen(true)}
-                className="btn-primary"
-              >
-                Sign In with Google
-              </button>
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  onClick={() => openAuthModal('login')}
+                  className="btn-secondary !min-h-[40px] h-[40px] text-xs px-4"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => openAuthModal('register')}
+                  className="btn-primary !min-h-[40px] h-[40px] text-xs px-4"
+                >
+                  Register
+                </button>
+              </div>
+            </div>
+          ) : role === 'alumni' ? (
+            <div className="p-8 bg-surface border border-border rounded-card text-center max-w-lg mx-auto space-y-4">
+              <Info className="w-8 h-8 text-accent mx-auto" />
+              <h2 className="text-base font-bold font-heading text-text">
+                Alumni Mentorship Policy
+              </h2>
+              <p className="text-xs text-muted leading-relaxed">
+                As a verified YSSE Alumni, your role is to offer mentorship to current YSSE members and interns. Alumni cannot request mentorship sessions from other alumni.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => setActiveTab('to-me')}
+                  className="btn-primary !min-h-[40px] h-[40px] text-xs px-4"
+                >
+                  View Requests to Me ({requestsToMe.length})
+                </button>
+                <Link
+                  to="/me"
+                  className="btn-secondary !min-h-[40px] h-[40px] text-xs px-4"
+                >
+                  Manage Session Offerings
+                </Link>
+              </div>
             </div>
           ) : loadingMyRequests ? (
             <div className="space-y-4">

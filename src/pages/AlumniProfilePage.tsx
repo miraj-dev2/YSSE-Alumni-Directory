@@ -19,6 +19,7 @@ import {
   Share2,
   Clock,
   Shield,
+  Info,
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
@@ -30,7 +31,7 @@ const LinkedinIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' 
 
 export const AlumniProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { role, setIsRoleSelectorOpen } = useAuth();
+  const { role, openAuthModal } = useAuth();
   const canViewPrivateContact = useCan('view_contact_private');
   const canViewFullContact = useCan('view_contact_full');
   const { success } = useToast();
@@ -150,19 +151,25 @@ export const AlumniProfilePage: React.FC = () => {
             {/* Request Session CTA */}
             {alumnus.openToSessions && (
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => {
-                    if (role === 'visitor') {
-                      setIsRoleSelectorOpen(true);
-                    } else {
-                      setIsSessionModalOpen(true);
-                    }
-                  }}
-                  className="btn-primary gap-2 text-xs"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Request a Mentorship Session</span>
-                </button>
+                {role === 'alumni' ? (
+                  <span className="chip bg-surface-hover text-muted border-border text-xs py-1 px-3">
+                    Mentorship offered to YSSE members
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => {
+                      if (role === 'visitor') {
+                        openAuthModal('login');
+                      } else {
+                        setIsSessionModalOpen(true);
+                      }
+                    }}
+                    className="btn-primary gap-2 text-xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Request a Mentorship Session</span>
+                  </button>
+                )}
                 <span className="text-xs text-muted">
                   Format: <strong className="text-text">{alumnus.sessionFormat || 'Online'}</strong>
                 </span>
@@ -225,10 +232,10 @@ export const AlumniProfilePage: React.FC = () => {
                   Email and direct links are protected. Sign in with your YSSE account to view.
                 </p>
                 <button
-                  onClick={() => setIsRoleSelectorOpen(true)}
+                  onClick={() => openAuthModal('login')}
                   className="btn-primary !min-h-[38px] h-[38px] text-xs w-full"
                 >
-                  Sign in to view
+                  Log in or register to view
                 </button>
               </div>
             ) : (
@@ -304,15 +311,25 @@ export const AlumniProfilePage: React.FC = () => {
                 Format: <strong className="text-text">{alumnus.sessionFormat || 'Online'}</strong>.
                 Submit a session request with your topic and specific questions.
               </p>
-              <button
-                onClick={() => {
-                  if (role === 'visitor') setIsRoleSelectorOpen(true);
-                  else setIsSessionModalOpen(true);
-                }}
-                className="btn-primary !min-h-[38px] h-[38px] text-xs w-full mt-4"
-              >
-                Request Session
-              </button>
+              {role === 'alumni' ? (
+                <div className="mt-4 p-3 rounded-md bg-surface-hover/70 border border-border text-xs text-muted flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-accent shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-text block mb-0.5">Alumni Policy</span>
+                    Alumni offer mentorship directly to YSSE members. Alumni cannot request sessions from another alumni.
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    if (role === 'visitor') openAuthModal('login');
+                    else setIsSessionModalOpen(true);
+                  }}
+                  className="btn-primary !min-h-[38px] h-[38px] text-xs w-full mt-4"
+                >
+                  Request Session
+                </button>
+              )}
             </div>
           )}
         </div>

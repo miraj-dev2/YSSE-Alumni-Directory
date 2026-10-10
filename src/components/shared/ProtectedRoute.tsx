@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, children }) => {
-  const { role, setIsRoleSelectorOpen } = useAuth();
+  const { role, openAuthModal, setIsRoleSelectorOpen } = useAuth();
 
   // Visitor trying to access protected content
   if (role === 'visitor' && !allowedRoles.includes('visitor')) {
@@ -25,12 +25,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
         <p className="text-sm text-muted mb-6 leading-relaxed">
           Please sign in to access this page. Members, alumni, and administrators can sign in using their account.
         </p>
-        <button
-          onClick={() => setIsRoleSelectorOpen(true)}
-          className="btn-primary gap-2"
-        >
-          <span>Sign In with Google (Demo)</span>
-        </button>
+        <div className="flex items-center justify-center gap-2.5">
+          <button
+            onClick={() => openAuthModal('login')}
+            className="btn-secondary !min-h-[42px] h-[42px] text-xs px-4"
+          >
+            Log In
+          </button>
+          <button
+            onClick={() => openAuthModal('register')}
+            className="btn-primary !min-h-[42px] h-[42px] text-xs px-4"
+          >
+            Register
+          </button>
+        </div>
       </div>
     );
   }

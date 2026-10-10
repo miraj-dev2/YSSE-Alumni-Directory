@@ -11,21 +11,34 @@ import {
   Repeat,
   Calendar,
   Layers,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 
 export const UserMenu: React.FC = () => {
-  const { user, role, logout, loginAs, setIsRoleSelectorOpen } = useAuth();
+  const { user, role, logout, loginAs, openAuthModal } = useAuth();
   const navigate = useNavigate();
 
   if (!user || role === 'visitor') {
     return (
-      <button
-        onClick={() => setIsRoleSelectorOpen(true)}
-        className="btn-primary !min-h-[44px] h-[44px] text-xs px-4 gap-2"
-        aria-label="Sign in"
-      >
-        <span>Sign in with Google</span>
-      </button>
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <button
+          onClick={() => openAuthModal('login')}
+          className="btn-secondary !min-h-[38px] sm:!min-h-[44px] h-[38px] sm:h-[44px] text-xs px-2.5 sm:px-3.5 gap-1.5"
+          aria-label="Log In"
+        >
+          <LogIn className="w-3.5 h-3.5" />
+          <span>Log In</span>
+        </button>
+        <button
+          onClick={() => openAuthModal('register')}
+          className="btn-primary !min-h-[38px] sm:!min-h-[44px] h-[38px] sm:h-[44px] text-xs px-2.5 sm:px-3.5 gap-1.5"
+          aria-label="Register"
+        >
+          <UserPlus className="w-3.5 h-3.5" />
+          <span>Register</span>
+        </button>
+      </div>
     );
   }
 
@@ -124,11 +137,11 @@ export const UserMenu: React.FC = () => {
           <DropdownMenu.Separator className="h-px bg-border my-1" />
 
           <DropdownMenu.Item
-            onClick={() => setIsRoleSelectorOpen(true)}
+            onClick={() => openAuthModal('login')}
             className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover cursor-pointer outline-none transition-colors text-muted"
           >
             <Layers className="w-4 h-4" />
-            <span>Switch Role (Simulation)</span>
+            <span>Switch Role / Account</span>
           </DropdownMenu.Item>
 
           <DropdownMenu.Item

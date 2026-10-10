@@ -23,8 +23,8 @@ const PERMISSION_MATRIX: Record<Permission, Record<UserRole, boolean>> = {
   request_session: {
     visitor: false,
     member: true,
-    alumni: true,
-    admin: true,
+    alumni: false,
+    admin: false,
   },
   manage_own_profile: {
     visitor: false,
