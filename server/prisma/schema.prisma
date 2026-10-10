@@ -1,0 +1,130 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum AlumniStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Source {
+  SELF
+  CSV
+  ADMIN
+}
+
+enum Mode {
+  ONLINE
+  OFFLINE
+  BOTH
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  DONE
+}
+
+model User {
+  id              String           @id @default(cuid())
+  googleId        String           @unique
+  email           String           @unique
+  name            String
+  avatarUrl       String?
+  role            Role             @default(MEMBER)
+  createdAt       DateTime         @default(now())
+  profile         AlumniProfile?
+  sessionRequests SessionRequest[]
+  auditLogs       AuditLog[]
+}
+
+model Wing {
+  id       String          @id @default(cuid())
+  name     String          @unique
+  profiles AlumniProfile[]
+}
+
+model AlumniProfile {
+  id              String         @id @default(cuid())
+  userId          String?        @unique
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name            String
+  email           String         @unique
+  batch           Int
+  wingId          String
+  wing            Wing           @relation(fields: [wingId], references: [id])
+  currentRole     String?
+  organization    String?
+  location        String?
+  linkedinUrl     String?
+  bio             String?
+  photoUrl        String?
+  isContactPublic Boolean        @default(false)
+  status          AlumniStatus   @default(PENDING)
+  rejectionReason String?
+  reviewedById    String?
+  reviewedAt      DateTime?
+  source          Source
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  sessionOffers   SessionOffer[]
+
+  @@index([status, batch])
+  @@index([wingId])
+  @@index([email])
+}
+
+model SessionOffer {
+  id          String           @id @default(cuid())
+  alumniId    String
+  alumni      AlumniProfile    @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+  topic       String
+  description String?
+  mode        Mode
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  requests    SessionRequest[]
+
+  @@index([alumniId])
+}
+
+model SessionRequest {
+  id          String        @id @default(cuid())
+  offerId     String
+  offer       SessionOffer  @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  requesterId String
+  requester   User          @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  message     String?
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  respondedAt DateTime?
+
+  @@unique([offerId, requesterId])
+  @@index([requesterId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String
+  targetId   String
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+}
