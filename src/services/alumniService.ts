@@ -27,12 +27,24 @@ export const alumniService = {
 
     // Batch filter
     if (params.batch && params.batch !== 'all') {
-      filtered = filtered.filter((a) => a.batch === params.batch);
+      const b = params.batch.trim().toLowerCase();
+      filtered = filtered.filter((a) => {
+        const itemBatch = a.batch.trim().toLowerCase();
+        if (itemBatch === b) return true;
+        if (b === '8' && (itemBatch === 'batch 8' || itemBatch.includes('8'))) return true;
+        return itemBatch.includes(b);
+      });
     }
 
     // Wing filter
     if (params.wing && params.wing !== 'all') {
-      filtered = filtered.filter((a) => a.wing === params.wing);
+      const w = params.wing.trim().toLowerCase();
+      filtered = filtered.filter((a) => {
+        const itemWing = a.wing.trim().toLowerCase();
+        if (itemWing === w) return true;
+        if (w === 'ysse it' && (itemWing === 'ysse it' || itemWing.includes('it') || itemWing.includes('tech'))) return true;
+        return itemWing.includes(w);
+      });
     }
 
     // Company filter

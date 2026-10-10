@@ -115,6 +115,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             className="input-base text-xs py-2 h-10 min-h-[40px]"
           >
             <option value="all">All Batches</option>
+            {filters.batch && filters.batch !== 'all' && !options.batches.includes(filters.batch) && (
+              <option value={filters.batch}>
+                {filters.batch.startsWith('Batch') ? filters.batch : `Batch ${filters.batch}`}
+              </option>
+            )}
             {options.batches.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
@@ -131,6 +136,9 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             className="input-base text-xs py-2 h-10 min-h-[40px]"
           >
             <option value="all">All Wings</option>
+            {filters.wing && filters.wing !== 'all' && !options.wings.includes(filters.wing) && (
+              <option value={filters.wing}>{filters.wing}</option>
+            )}
             {options.wings.map((w) => (
               <option key={w} value={w}>{w}</option>
             ))}

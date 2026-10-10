@@ -2,105 +2,156 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Globe, ArrowUpRight } from 'lucide-react';
 
+const LinkedinIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+  </svg>
+);
+
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-surface/70 border-t border-border mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <footer className="bg-surface/90 border-t border-border mt-auto">
+      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand info */}
+          {/* Brand info with Official Logo */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-surface-elevated border border-border flex items-center justify-center text-accent font-heading font-black">
-                Y
+              <img
+                src="/ysse-logo.png"
+                alt="YSSE Logo"
+                className="h-10 w-auto max-w-[50px] object-contain bg-white rounded p-1 border border-border-strong"
+              />
+              <div>
+                <span className="font-heading font-bold text-lg text-text block leading-tight">
+                  YSSE Alumni Directory
+                </span>
+                <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
+                  Stage of Innovation & Network
+                </span>
               </div>
-              <span className="font-heading font-bold text-lg text-text">
-                YSSE Alumni Directory
-              </span>
             </div>
-            <p className="text-sm text-text-muted max-w-md leading-relaxed">
+            <p className="text-xs text-muted max-w-md leading-relaxed">
               Youth School for Social Entrepreneurs (YSSE) empowers changemakers,
               fosters grassroots entrepreneurship, and connects alumni across the globe
               to mentor the next generation of social innovators.
             </p>
-            <div className="flex items-center gap-2 text-xs text-text-muted">
+            <div className="flex items-center gap-2 text-xs text-muted pt-1">
               <span>Made with</span>
-              <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 inline" />
+              <Heart className="w-3.5 h-3.5 text-accent fill-accent inline" />
               <span>for the YSSE Global Community</span>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Explore Links */}
           <div>
-            <h4 className="font-heading font-semibold text-text text-sm uppercase tracking-wider mb-4">
+            <h4 className="font-heading font-semibold text-text text-xs uppercase tracking-wider mb-4">
               Explore
             </h4>
-            <ul className="space-y-2.5 text-sm text-text-muted">
+            <ul className="space-y-2.5 text-xs text-muted">
               <li>
                 <Link to="/alumni" className="hover:text-accent transition-colors">
-                  Alumni Directory
+                  Alumni Directory (/alumni)
                 </Link>
               </li>
               <li>
                 <Link to="/sessions" className="hover:text-accent transition-colors">
-                  Mentorship Sessions
+                  Mentorship Sessions (/sessions)
                 </Link>
               </li>
               <li>
-                <Link to="/me" className="hover:text-accent transition-colors">
-                  Member Profile
+                <Link
+                  to="/alumni?wing=YSSE IT"
+                  className="hover:text-accent transition-colors flex items-center justify-between group"
+                >
+                  <span>Browse by wing (YSSE IT)</span>
+                  <span className="chip bg-surface text-muted border-border group-hover:border-accent text-[9px]">
+                    Filter
+                  </span>
                 </Link>
               </li>
               <li>
-                <Link to="/admin" className="hover:text-accent transition-colors text-amber-300/80">
-                  Admin Portal
+                <Link
+                  to="/alumni?batch=8"
+                  className="hover:text-accent transition-colors flex items-center justify-between group"
+                >
+                  <span>Browse by batch (Batch 8)</span>
+                  <span className="chip bg-surface text-muted border-border group-hover:border-accent text-[9px]">
+                    Filter
+                  </span>
                 </Link>
+              </li>
+              <li>
+                <a href="/#about" className="hover:text-accent transition-colors">
+                  About YSSE
+                </a>
               </li>
             </ul>
           </div>
 
-          {/* Connect */}
+          {/* Connect With YSSE */}
           <div>
-            <h4 className="font-heading font-semibold text-text text-sm uppercase tracking-wider mb-4">
+            <h4 className="font-heading font-semibold text-text text-xs uppercase tracking-wider mb-4">
               Connect With YSSE
             </h4>
-            <ul className="space-y-2.5 text-sm text-text-muted">
+            <ul className="space-y-3 text-xs text-muted">
               <li>
                 <a
-                  href="https://ysse.org"
+                  href="https://ysseglobal.org/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-accent transition-colors inline-flex items-center gap-1.5"
+                  className="hover:text-accent transition-colors inline-flex items-center gap-2 group"
                 >
-                  <Globe className="w-4 h-4 text-accent" />
-                  <span>Official Website</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                  <Globe className="w-4 h-4 text-accent shrink-0" />
+                  <span className="text-text group-hover:text-accent transition-colors">
+                    YSSE Main Portal
+                  </span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60 group-hover:opacity-100" />
                 </a>
               </li>
               <li>
                 <a
-                  href="https://linkedin.com"
+                  href="https://www.linkedin.com/in/ysseglobal/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-accent transition-colors inline-flex items-center gap-1.5"
+                  className="hover:text-accent transition-colors inline-flex items-center gap-2 group"
                 >
-                  <span>LinkedIn Community</span>
-                  <ArrowUpRight className="w-3 h-3 opacity-60" />
+                  <LinkedinIcon className="w-4 h-4 text-accent shrink-0" />
+                  <span className="text-text group-hover:text-accent transition-colors">
+                    YSSE on LinkedIn
+                  </span>
+                  <ArrowUpRight className="w-3 h-3 opacity-60 group-hover:opacity-100" />
                 </a>
               </li>
-              <li>
-                <span className="block text-xs text-text-muted/80 mt-2">
-                  Inquiries: alumni@ysse.org
+              <li className="pt-2 border-t border-border">
+                <span className="block text-[11px] font-mono uppercase text-muted mb-0.5">
+                  Secretariat Inquiries
                 </span>
+                <a
+                  href="mailto:alumni@ysseglobal.org"
+                  className="text-text hover:text-accent transition-colors font-mono text-[11px]"
+                >
+                  alumni@ysseglobal.org
+                </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-text-muted">
+        <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted">
           <p>© {new Date().getFullYear()} Youth School for Social Entrepreneurs (YSSE). All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <span className="chip-mono bg-surface-elevated text-text-muted">Dark Mode Token Theme</span>
-            <span className="chip-mono bg-accent/15 text-accent border border-accent/20">Demo Mode</span>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://ysseglobal.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-accent transition-colors"
+            >
+              ysseglobal.org
+            </a>
+            <span>•</span>
+            <span className="chip bg-surface text-accent border-border text-[10px]">
+              Alumni Network
+            </span>
           </div>
         </div>
       </div>

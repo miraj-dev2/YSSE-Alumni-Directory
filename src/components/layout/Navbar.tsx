@@ -20,9 +20,11 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-3 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-md p-1"
             aria-label="YSSE Alumni Directory Home"
           >
-            <div className="w-9 h-9 rounded-md bg-surface border border-border-strong flex items-center justify-center text-accent font-heading font-black text-lg">
-              Y
-            </div>
+            <img
+              src="/ysse-logo.png"
+              alt="YSSE Logo"
+              className="h-9 w-auto max-w-[46px] object-contain bg-white rounded p-0.5 border border-border-strong"
+            />
             <div>
               <span className="font-heading font-semibold text-base text-text tracking-tight flex items-center gap-1.5 leading-none">
                 YSSE <span className="text-accent font-normal">Alumni</span>

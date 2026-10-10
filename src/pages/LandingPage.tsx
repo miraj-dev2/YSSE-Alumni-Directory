@@ -229,32 +229,32 @@ export const LandingPage: React.FC = () => {
           </Link>
 
           <Link
-            to="/alumni?wing=Tech%20%26%20Innovation"
+            to="/alumni?wing=YSSE IT"
             className="group bg-surface border border-border hover:border-border-strong rounded-card p-5 transition-colors"
           >
             <div className="w-9 h-9 rounded-md bg-surface-hover border border-border-strong flex items-center justify-center text-accent mb-4">
               <Layers className="w-4 h-4" />
             </div>
             <h3 className="text-sm font-semibold text-text group-hover:text-accent transition-colors">
-              By YSSE Wing
+              By Wing (YSSE IT)
             </h3>
             <p className="text-xs text-muted mt-1 leading-relaxed">
-              Connect with alumni who served in Tech, Marketing, HR, Finance, or Logistics.
+              Connect with alumni who served in YSSE IT, engineering, design, and innovation.
             </p>
           </Link>
 
           <Link
-            to="/alumni?batch=Batch%202024"
+            to="/alumni?batch=8"
             className="group bg-surface border border-border hover:border-border-strong rounded-card p-5 transition-colors"
           >
             <div className="w-9 h-9 rounded-md bg-surface-hover border border-border-strong flex items-center justify-center text-accent mb-4">
               <GraduationCap className="w-4 h-4" />
             </div>
             <h3 className="text-sm font-semibold text-text group-hover:text-accent transition-colors">
-              By Intake Batch
+              By Batch (Batch 8)
             </h3>
             <p className="text-xs text-muted mt-1 leading-relaxed">
-              Browse cohort groups from founding years 2018 through Batch 2024.
+              Browse cohort groups from Batch 8 through the latest alumni cohorts.
             </p>
           </Link>
         </div>
@@ -454,20 +454,64 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 8. For Alumni: 3-step join process */}
-      <section id="about" className="max-w-content mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-surface border border-border rounded-card p-8 sm:p-12">
-          <div className="max-w-xl mb-8">
-            <span className="chip bg-surface-hover text-accent border-border-strong text-xs mb-3">
-              Alumni Registration
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold font-heading text-text">
-              Three steps to join the verified network
-            </h2>
-            <p className="text-xs text-muted mt-1 leading-relaxed">
-              Maintain connections with peers and mentor upcoming cohorts.
-            </p>
+      {/* 8. For Alumni & About YSSE Global */}
+      <section id="about" className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        {/* About YSSE Global Card */}
+        <div className="bg-surface border border-border rounded-card p-8 sm:p-10">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-border">
+            <div className="flex items-start sm:items-center gap-4">
+              <img
+                src="/ysse-logo.png"
+                alt="YSSE Logo"
+                className="h-14 w-auto max-w-[70px] object-contain bg-white rounded p-1 border border-border-strong shrink-0"
+              />
+              <div>
+                <span className="chip bg-surface-hover text-accent border-border-strong text-xs mb-1">
+                  Stage of Innovation
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold font-heading text-text">
+                  About Youth School for Social Entrepreneurs
+                </h2>
+                <p className="text-xs text-muted mt-1 leading-relaxed max-w-xl">
+                  Empowering young changemakers, grassroots social entrepreneurship, and global innovation across Bangladesh and beyond.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <a
+                href="https://ysseglobal.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary !min-h-[40px] h-[40px] text-xs px-4 gap-1.5"
+              >
+                <span>YSSE Main Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/ysseglobal/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-secondary !min-h-[40px] h-[40px] text-xs px-4 gap-1.5"
+              >
+                <span>LinkedIn Page</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
+
+          <div className="pt-6">
+            <div className="max-w-xl mb-6">
+              <span className="chip bg-surface-hover text-accent border-border-strong text-xs mb-2">
+                Alumni Registration Guide
+              </span>
+              <h3 className="text-xl sm:text-2xl font-bold font-heading text-text">
+                Three steps to join the verified network
+              </h3>
+              <p className="text-xs text-muted mt-1 leading-relaxed">
+                Maintain connections with peers and mentor upcoming cohorts.
+              </p>
+            </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="border border-border rounded-md p-5 bg-surface-hover/30">
@@ -508,7 +552,8 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* 9. FAQ Accordion */}
       <section className="max-w-content mx-auto px-4 sm:px-6 lg:px-8">
