@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { useDashboard } from '../../hooks/useDashboard';
 import { useToast } from '../../context/ToastContext';
 import { AlumniProfile } from '../../types/admin';
@@ -14,6 +15,7 @@ import { TileSkeleton, ErrorState } from '../../components/common/SkeletonLoader
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const {
     stats, growthData, growthInterval, setGrowthInterval, wingData, directoryItems,
     activeTab, setActiveTab, openToSessionsOnly, setOpenToSessionsOnly,
@@ -73,7 +75,7 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="space-y-7">
       <AdminPageHeader
-        name="Rashidul"
+        name={user?.name || 'Administrator'}
         period={period}
         onPeriodChange={setPeriod}
         onAddAlumnus={handleOpenAdd}

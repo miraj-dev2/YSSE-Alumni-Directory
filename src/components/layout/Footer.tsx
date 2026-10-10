@@ -11,10 +11,9 @@ const LinkedinIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' 
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-surface/90 border-t border-border mt-auto">
-      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand info with Official Logo */}
-          <div className="md:col-span-2 space-y-4">
+      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="md:col-span-2 space-y-3">
             <div className="flex items-center gap-3">
               <img
                 src="/ysse-logo.png"
@@ -31,9 +30,8 @@ export const Footer: React.FC = () => {
               </div>
             </div>
             <p className="text-xs text-muted max-w-md leading-relaxed">
-              Youth School for Social Entrepreneurs (YSSE) empowers changemakers,
-              fosters grassroots entrepreneurship, and connects alumni across the globe
-              to mentor the next generation of social innovators.
+              Youth School for Social Entrepreneurs empowers changemakers, fosters grassroots
+              initiatives, and connects alumni across the globe to mentor future leaders.
             </p>
             <div className="flex items-center gap-2 text-xs text-muted pt-1">
               <span>Made with</span>
@@ -42,58 +40,39 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Explore Links */}
           <div>
-            <h4 className="font-heading font-semibold text-text text-xs uppercase tracking-wider mb-4">
+            <h4 className="font-heading font-semibold text-text text-xs uppercase tracking-wider mb-3">
               Explore
             </h4>
-            <ul className="space-y-2.5 text-xs text-muted">
+            <ul className="space-y-2 text-xs text-muted">
               <li>
                 <Link to="/alumni" className="hover:text-accent transition-colors">
-                  Alumni Directory (/alumni)
+                  Alumni Directory
                 </Link>
               </li>
               <li>
                 <Link to="/sessions" className="hover:text-accent transition-colors">
-                  Mentorship Sessions (/sessions)
+                  Mentorship Sessions
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/alumni?wing=YSSE IT"
-                  className="hover:text-accent transition-colors flex items-center justify-between group"
-                >
-                  <span>Browse by wing (YSSE IT)</span>
-                  <span className="chip bg-surface text-muted border-border group-hover:border-accent text-[9px]">
-                    Filter
-                  </span>
+                <Link to="/me" className="hover:text-accent transition-colors">
+                  Alumni Enrollment
                 </Link>
               </li>
               <li>
-                <Link
-                  to="/alumni?batch=8"
-                  className="hover:text-accent transition-colors flex items-center justify-between group"
-                >
-                  <span>Browse by batch (Batch 8)</span>
-                  <span className="chip bg-surface text-muted border-border group-hover:border-accent text-[9px]">
-                    Filter
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <a href="/#about" className="hover:text-accent transition-colors">
-                  About YSSE
+                <a href="https://ysseglobal.org/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">
+                  About YSSE Global
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Connect With YSSE */}
           <div>
-            <h4 className="font-heading font-semibold text-text text-xs uppercase tracking-wider mb-4">
+            <h4 className="font-heading font-semibold text-text text-xs uppercase tracking-wider mb-3">
               Connect With YSSE
             </h4>
-            <ul className="space-y-3 text-xs text-muted">
+            <ul className="space-y-2.5 text-xs text-muted">
               <li>
                 <a
                   href="https://ysseglobal.org/"
@@ -102,9 +81,7 @@ export const Footer: React.FC = () => {
                   className="hover:text-accent transition-colors inline-flex items-center gap-2 group"
                 >
                   <Globe className="w-4 h-4 text-accent shrink-0" />
-                  <span className="text-text group-hover:text-accent transition-colors">
-                    YSSE Main Portal
-                  </span>
+                  <span className="text-text group-hover:text-accent transition-colors">YSSE Main Portal</span>
                   <ArrowUpRight className="w-3 h-3 opacity-60 group-hover:opacity-100" />
                 </a>
               </li>
@@ -116,20 +93,13 @@ export const Footer: React.FC = () => {
                   className="hover:text-accent transition-colors inline-flex items-center gap-2 group"
                 >
                   <LinkedinIcon className="w-4 h-4 text-accent shrink-0" />
-                  <span className="text-text group-hover:text-accent transition-colors">
-                    YSSE on LinkedIn
-                  </span>
+                  <span className="text-text group-hover:text-accent transition-colors">YSSE on LinkedIn</span>
                   <ArrowUpRight className="w-3 h-3 opacity-60 group-hover:opacity-100" />
                 </a>
               </li>
               <li className="pt-2 border-t border-border">
-                <span className="block text-[11px] font-mono uppercase text-muted mb-0.5">
-                  Secretariat Inquiries
-                </span>
-                <a
-                  href="mailto:alumni@ysseglobal.org"
-                  className="text-text hover:text-accent transition-colors font-mono text-[11px]"
-                >
+                <span className="block text-[11px] font-mono uppercase text-muted mb-0.5">Secretariat Inquiries</span>
+                <a href="mailto:alumni@ysseglobal.org" className="text-text hover:text-accent font-mono text-[11px]">
                   alumni@ysseglobal.org
                 </a>
               </li>
@@ -137,21 +107,14 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted">
+        <div className="mt-10 pt-5 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted">
           <p>© {new Date().getFullYear()} Youth School for Social Entrepreneurs (YSSE). All rights reserved.</p>
           <div className="flex items-center gap-3">
-            <a
-              href="https://ysseglobal.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-accent transition-colors"
-            >
+            <a href="https://ysseglobal.org/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">
               ysseglobal.org
             </a>
             <span>•</span>
-            <span className="chip bg-surface text-accent border-border text-[10px]">
-              Alumni Network
-            </span>
+            <span className="chip bg-surface text-accent border-border text-[10px]">Alumni Network</span>
           </div>
         </div>
       </div>

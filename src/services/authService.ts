@@ -84,11 +84,11 @@ export const authService = {
 
     const emailMap: Record<string, string> = {
       admin: 'admin@ysseglobal.org',
-      alumni: 'alumni.tanvir@example.org',
-      member: 'member.rahim@example.org'
+      alumni: 'alumni@ysseglobal.org',
+      member: 'member@ysseglobal.org'
     };
 
-    return this.loginWithCredentials(emailMap[role] || 'member@example.org');
+    return this.loginWithCredentials(emailMap[role] || 'member@ysseglobal.org');
   },
 
   async logout(): Promise<void> {
@@ -97,7 +97,8 @@ export const authService = {
 
   async updateUserAccount(updates: Partial<User>): Promise<User> {
     const current = await this.getCurrentUser();
-    return { ...(current || { id: 'usr-1', email: 'user@example.com', name: 'User', role: 'member' }), ...updates };
+    if (!current) throw new Error('Not authenticated');
+    return { ...current, ...updates };
   },
 
   async updateUser(updates: Partial<User>): Promise<User> {

@@ -7,7 +7,7 @@ import { Save, Bell, User } from 'lucide-react';
 export const AdminSettingsPage: React.FC = () => {
   const { user, updateUserAccount } = useAuth();
   const { success, error } = useToast();
-  const [name, setName] = useState(user?.name || 'Rashidul Alam');
+  const [name, setName] = useState(user?.name || 'Administrator');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -59,7 +59,7 @@ export const AdminSettingsPage: React.FC = () => {
               Email Address
             </label>
             <p className="text-xs font-mono text-[#EEF3E8] bg-[#18251D] px-4 py-2.5 rounded-full border border-[#2E4336]">
-              {user?.email || 'rashidul.alam@ysseglobal.org'}
+              {user?.email || 'admin@ysseglobal.org'}
             </p>
           </div>
         </div>

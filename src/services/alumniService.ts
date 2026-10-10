@@ -106,16 +106,19 @@ export const alumniService = {
   },
 
   async getFilterOptions() {
-    const wingsRes = await apiClient.get<any[]>('/wings').catch(() => ({ data: [] }));
+    const [wingsRes, alumniRes] = await Promise.all([
+      apiClient.get<any[]>('/wings').catch(() => ({ data: [] })),
+      apiClient.get<any[]>('/alumni', { pageSize: 100 }).catch(() => ({ data: [] }))
+    ]);
     const wings = (wingsRes.data || []).map((w: any) => w.name);
+    const alumni = alumniRes.data || [];
 
-    return {
-      batches: ['Batch 1', 'Batch 2', 'Batch 3', 'Batch 4', 'Batch 5', 'Batch 6', 'Batch 7', 'Batch 8', 'Batch 9', 'Batch 10'],
-      wings: wings.length > 0 ? wings : ['IT', 'Academy', 'Charity Hub', 'Ekmutho Ahar', 'Shop'],
-      companies: ['Pathao', 'bKash', 'ShopUp', 'Grameenphone', 'Optimizely', 'BRAC', 'YSSE Global', 'Brain Station 23'],
-      cities: ['Dhaka', 'Chattogram', 'Sylhet', 'Rajshahi', 'Khulna'],
-      fields: ['Technology & IT', 'Marketing & PR', 'Social Entrepreneurship', 'Design & Creative', 'Finance']
-    };
+    const batches = Array.from(new Set(alumni.map((a: any) => `Batch ${a.batch}`))).sort();
+    const companies = Array.from(new Set(alumni.map((a: any) => a.organization).filter(Boolean))).sort();
+    const cities = Array.from(new Set(alumni.map((a: any) => a.location?.split(',')[0]?.trim()).filter(Boolean))).sort();
+    const fields = Array.from(new Set(alumni.map((a: any) => a.currentRole).filter(Boolean))).sort();
+
+    return { batches, wings, companies, cities, fields };
   },
 
   getDistinctFilterOptions() {

@@ -108,7 +108,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               A
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-[#EEF3E8] truncate">{adminUser?.name || 'Rashidul Alam'}</p>
+              <p className="text-xs font-semibold text-[#EEF3E8] truncate">{adminUser?.name || 'Administrator'}</p>
               <p className="text-[10px] font-mono text-[#B7FF72] uppercase leading-none">Admin</p>
             </div>
           </div>

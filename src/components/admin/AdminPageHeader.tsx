@@ -13,7 +13,7 @@ interface AdminPageHeaderProps {
 
 export const AdminPageHeader: React.FC<AdminPageHeaderProps> = ({
   title,
-  name = 'Rashidul',
+  name = 'Administrator',
   subtitle = 'Here is your executive alumni directory overview for the current session.',
   onAddAlumnus,
   period = 'This month',
