@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
                   YSSE Alumni Directory
                 </span>
                 <span className="font-mono text-[10px] text-muted uppercase tracking-wider">
-                  Stage of Innovation & Network
+                  Global Alumni Network
                 </span>
               </div>
             </div>

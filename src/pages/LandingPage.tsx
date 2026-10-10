@@ -466,9 +466,6 @@ export const LandingPage: React.FC = () => {
                 className="h-14 w-auto max-w-[70px] object-contain bg-white rounded p-1 border border-border-strong shrink-0"
               />
               <div>
-                <span className="chip bg-surface-hover text-accent border-border-strong text-xs mb-1">
-                  Stage of Innovation
-                </span>
                 <h2 className="text-xl sm:text-2xl font-bold font-heading text-text">
                   About Youth School for Social Entrepreneurs
                 </h2>
