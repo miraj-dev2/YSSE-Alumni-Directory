@@ -456,48 +456,9 @@ export const LandingPage: React.FC = () => {
 
       {/* 8. For Alumni & About YSSE Global */}
       <section id="about" className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* About YSSE Global Card */}
+        {/* Alumni Registration Guide Card */}
         <div className="bg-surface border border-border rounded-card p-8 sm:p-10">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-border">
-            <div className="flex items-start sm:items-center gap-4">
-              <img
-                src="/ysse-logo.png"
-                alt="YSSE Logo"
-                className="h-14 w-auto max-w-[70px] object-contain bg-white rounded p-1 border border-border-strong shrink-0"
-              />
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold font-heading text-text">
-                  About Youth School for Social Entrepreneurs
-                </h2>
-                <p className="text-xs text-muted mt-1 leading-relaxed max-w-xl">
-                  Empowering young changemakers, grassroots social entrepreneurship, and global innovation across Bangladesh and beyond.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2.5">
-              <a
-                href="https://ysseglobal.org/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary !min-h-[40px] h-[40px] text-xs px-4 gap-1.5"
-              >
-                <span>YSSE Main Portal</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/ysseglobal/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-secondary !min-h-[40px] h-[40px] text-xs px-4 gap-1.5"
-              >
-                <span>LinkedIn Page</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          <div className="pt-6">
+          <div>
             <div className="max-w-xl mb-6">
               <span className="chip bg-surface-hover text-accent border-border-strong text-xs mb-2">
                 Alumni Registration Guide
