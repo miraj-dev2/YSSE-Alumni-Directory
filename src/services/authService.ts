@@ -1,75 +1,70 @@
 import { User, UserRole } from '../types';
-import { getStoredAuth, saveStoredAuth, getStoredUsers, saveStoredUsers, logActivity } from './storage';
-
-const delay = (ms = 150) => new Promise((resolve) => setTimeout(resolve, ms));
+import { apiClient } from '../api/client';
 
 export const authService = {
   async getCurrentUser(): Promise<User | null> {
-    await delay(60);
-    return getStoredAuth();
-  },
+    try {
+      const res = await apiClient.get<any>('/auth/me');
+      const u = res.data;
+      if (!u) return null;
+      const role: UserRole =
+        u.role === 'ADMIN' ? 'admin' : u.profile ? 'alumni' : 'member';
 
-  async loginAs(role: UserRole): Promise<User | null> {
-    await delay(150);
-    const users = getStoredUsers();
-
-    if (role === 'visitor') {
-      saveStoredAuth(null);
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        avatarUrl: u.avatarUrl || undefined,
+        role,
+        interests: ['Social Entrepreneurship', 'Leadership'],
+        lastLoginAt: new Date().toISOString()
+      };
+    } catch {
       return null;
     }
+  },
 
-    const matched = users.find((u) => u.role === role);
-    if (matched) {
-      const updated = { ...matched, lastLoginAt: new Date().toISOString() };
-      saveStoredAuth(updated);
-      return updated;
-    }
+  async loginWithGoogle(idToken: string): Promise<User> {
+    const res = await apiClient.post<any>('/auth/google', { idToken });
+    const u = res.user;
+    const role: UserRole = u.role === 'ADMIN' ? 'admin' : 'member';
 
-    return null;
+    return {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      avatarUrl: u.avatarUrl || undefined,
+      role,
+      interests: ['Social Entrepreneurship'],
+      lastLoginAt: new Date().toISOString()
+    };
   },
 
   async loginWithCredentials(email: string, _password?: string): Promise<User> {
-    await delay(200);
     const normalized = email.trim().toLowerCase();
-    const users = getStoredUsers();
+    const roleParam = normalized.includes('admin') ? 'ADMIN' : 'MEMBER';
+    const nameCandidate = email.split('@')[0].replace(/[._-]/g, ' ');
+    const name = nameCandidate.charAt(0).toUpperCase() + nameCandidate.slice(1);
 
-    // Check if user exists by email
-    let user = users.find((u) => u.email.toLowerCase() === normalized);
+    const res = await apiClient.post<any>('/auth/dev-login', {
+      email: normalized,
+      name,
+      role: roleParam
+    });
 
-    if (!user) {
-      // If mock login and email contains 'alumni' or 'admin', allocate appropriate role, otherwise default to member
-      const role: UserRole = normalized.includes('admin')
-        ? 'admin'
-        : normalized.includes('alumni')
-        ? 'alumni'
-        : 'member';
+    const u = res.user;
+    const role: UserRole =
+      u.role === 'ADMIN' ? 'admin' : normalized.includes('alumni') ? 'alumni' : 'member';
 
-      const displayName = email.split('@')[0].replace(/[._-]/g, ' ');
-      const capitalized = displayName.charAt(0).toUpperCase() + displayName.slice(1);
-
-      user = {
-        id: `user-${Date.now()}`,
-        name: capitalized || 'YSSE Member',
-        email: normalized,
-        role,
-        interests: ['Social Entrepreneurship', 'Community Development'],
-        lastLoginAt: new Date().toISOString(),
-      };
-
-      users.push(user);
-      saveStoredUsers(users);
-    } else {
-      user = { ...user, lastLoginAt: new Date().toISOString() };
-      const idx = users.findIndex((u) => u.id === user!.id);
-      if (idx !== -1) {
-        users[idx] = user;
-        saveStoredUsers(users);
-      }
-    }
-
-    saveStoredAuth(user);
-    logActivity(user.name, 'Signed in', 'Email authentication');
-    return user;
+    return {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      avatarUrl: u.avatarUrl || undefined,
+      role,
+      interests: ['Community Leadership'],
+      lastLoginAt: new Date().toISOString()
+    };
   },
 
   async registerUser(data: {
@@ -78,80 +73,34 @@ export const authService = {
     password?: string;
     role: 'member' | 'alumni';
   }): Promise<User> {
-    await delay(250);
-    const normalized = data.email.trim().toLowerCase();
-    const users = getStoredUsers();
+    return this.loginWithCredentials(data.email);
+  },
 
-    const existing = users.find((u) => u.email.toLowerCase() === normalized);
-    if (existing) {
-      // Log in as existing
-      const updated = { ...existing, name: data.name || existing.name, role: data.role, lastLoginAt: new Date().toISOString() };
-      saveStoredAuth(updated);
-      return updated;
+  async loginAs(role: UserRole): Promise<User | null> {
+    if (role === 'visitor') {
+      await this.logout();
+      return null;
     }
 
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      name: data.name.trim(),
-      email: normalized,
-      role: data.role,
-      interests: data.role === 'alumni' ? ['Mentorship', 'Leadership'] : ['Internships', 'Career Guidance'],
-      lastLoginAt: new Date().toISOString(),
+    const emailMap: Record<string, string> = {
+      admin: 'admin@ysseglobal.org',
+      alumni: 'alumni.tanvir@example.org',
+      member: 'member.rahim@example.org'
     };
 
-    users.push(newUser);
-    saveStoredUsers(users);
-    saveStoredAuth(newUser);
-    logActivity(newUser.name, 'Registered account', `Role: ${newUser.role}`);
-    return newUser;
-  },
-
-  async loginWithGoogle(targetRole: UserRole = 'member'): Promise<User> {
-    await delay(200);
-    const effectiveRole: 'member' | 'alumni' | 'admin' =
-      targetRole === 'visitor' ? 'member' : targetRole;
-    const users = getStoredUsers();
-    let matched = users.find((u) => u.role === effectiveRole);
-
-    if (!matched) {
-      matched = {
-        id: `user-google-${Date.now()}`,
-        name: effectiveRole === 'alumni' ? 'Google Alumni User' : 'Google Member User',
-        email: `${effectiveRole}.user@gmail.com`,
-        role: effectiveRole,
-        lastLoginAt: new Date().toISOString(),
-      };
-      users.push(matched);
-      saveStoredUsers(users);
-    } else {
-      matched = { ...matched, lastLoginAt: new Date().toISOString() };
-    }
-
-    saveStoredAuth(matched);
-    logActivity(matched.name, 'Signed in', 'Google OAuth');
-    return matched;
-  },
-
-  async updateUser(updates: Partial<User>): Promise<User> {
-    await delay(150);
-    const current = getStoredAuth();
-    if (!current) throw new Error('No active user session');
-
-    const updated = { ...current, ...updates };
-    saveStoredAuth(updated);
-
-    const allUsers = getStoredUsers();
-    const idx = allUsers.findIndex((u) => u.id === current.id);
-    if (idx !== -1) {
-      allUsers[idx] = updated;
-      saveStoredUsers(allUsers);
-    }
-
-    return updated;
+    return this.loginWithCredentials(emailMap[role] || 'member@example.org');
   },
 
   async logout(): Promise<void> {
-    await delay(80);
-    saveStoredAuth(null);
+    await apiClient.post('/auth/logout').catch(() => {});
   },
+
+  async updateUserAccount(updates: Partial<User>): Promise<User> {
+    const current = await this.getCurrentUser();
+    return { ...(current || { id: 'usr-1', email: 'user@example.com', name: 'User', role: 'member' }), ...updates };
+  },
+
+  async updateUser(updates: Partial<User>): Promise<User> {
+    return this.updateUserAccount(updates);
+  }
 };

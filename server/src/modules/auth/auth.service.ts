@@ -34,6 +34,38 @@ export const loginWithGoogle = async (idToken: string) => {
   return { user, token };
 };
 
+export const devLogin = async (
+  email: string,
+  name?: string,
+  requestedRole?: 'ADMIN' | 'MEMBER'
+) => {
+  if (env.NODE_ENV === 'production') {
+    throw AppError.forbidden('Development login disabled in production');
+  }
+
+  const normalized = email.toLowerCase().trim();
+  const isAdmin = env.ADMIN_EMAILS.includes(normalized) || requestedRole === 'ADMIN';
+  const targetRole = isAdmin ? 'ADMIN' : 'MEMBER';
+
+  const user = await prisma.user.upsert({
+    where: { email: normalized },
+    update: {
+      name: name || normalized.split('@')[0],
+      role: targetRole
+    },
+    create: {
+      googleId: `dev_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      email: normalized,
+      name: name || normalized.split('@')[0],
+      role: targetRole
+    }
+  });
+
+  await autoClaimAlumniProfile(user.id, user.email);
+  const token = signToken(user.id);
+  return { user, token };
+};
+
 export const getCurrentUser = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },

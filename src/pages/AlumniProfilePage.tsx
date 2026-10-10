@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { alumniService } from '../services/alumniService';
 import { useAuth } from '../context/AuthContext';
 import { useCan } from '../hooks/useCan';
+import { AlumniProfile } from '../types';
 import { Avatar } from '../components/shared/Avatar';
 import { Timeline } from '../components/shared/Timeline';
 import { AlumniCard } from '../components/shared/AlumniCard';
@@ -342,7 +343,7 @@ export const AlumniProfilePage: React.FC = () => {
             Similar Alumni ({alumnus.wing} & {alumnus.batch})
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {similarAlumni.map((sim) => (
+            {similarAlumni.map((sim: AlumniProfile) => (
               <AlumniCard key={sim.id} alumni={sim} />
             ))}
           </div>

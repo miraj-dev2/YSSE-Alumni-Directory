@@ -37,6 +37,37 @@ export const googleAuth = async (
   }
 };
 
+export const devAuth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email, name, role } = req.body;
+    const { user, token } = await authService.devLogin(email, name, role);
+
+    res.cookie(COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: SEVEN_DAYS_MS
+    });
+
+    ok(res, {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        role: user.role
+      },
+      token
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const logout = async (
   _req: Request,
   res: Response,

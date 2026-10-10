@@ -1,6 +1,6 @@
 import React from 'react';
-import { Search, SlidersHorizontal, Bell, Menu } from 'lucide-react';
-import { DEMO_ADMIN_USER } from '../../api/mockData';
+import { Search, SlidersHorizontal, Bell, Menu, UserCheck } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface AdminTopBarProps {
   onOpenMobileMenu: () => void;
@@ -15,6 +15,10 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
   searchQuery = '',
   onSearchChange,
 }) => {
+  const { user } = useAuth();
+  const displayName = user?.name || 'Administrator';
+  const displayRole = user?.role ? user.role.toUpperCase() : 'ADMIN';
+
   return (
     <header className="h-18 py-3 px-4 sm:px-9 border-b border-[#2E4336] bg-[#18251D] flex items-center justify-between gap-4">
       {/* Left: Mobile menu toggle + Pill Search + Filter */}
@@ -63,17 +67,23 @@ export const AdminTopBar: React.FC<AdminTopBarProps> = ({
         </button>
 
         <div className="flex items-center gap-2.5 pl-2 border-l border-[#2E4336]">
-          <img
-            src={DEMO_ADMIN_USER.avatarUrl}
-            alt={DEMO_ADMIN_USER.name}
-            className="w-9 h-9 rounded-full object-cover border border-[#2E4336]"
-          />
+          {user?.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={displayName}
+              className="w-9 h-9 rounded-full object-cover border border-[#2E4336]"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-[#1F3027] border border-[#2E4336] flex items-center justify-center text-[#B7FF72]">
+              <UserCheck className="w-4 h-4" />
+            </div>
+          )}
           <div className="hidden sm:block text-left">
             <span className="text-xs font-semibold text-[#EEF3E8] block leading-tight">
-              {DEMO_ADMIN_USER.name}
+              {displayName}
             </span>
             <span className="text-[10px] font-mono text-[#B7FF72] uppercase leading-none block mt-0.5">
-              Admin
+              {displayRole}
             </span>
           </div>
         </div>

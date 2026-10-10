@@ -1,23 +1,38 @@
-// DEMO API: Session requests service for YSSE Admin
 import { SessionRequest, SessionStatus } from '../types/admin';
-import { INITIAL_SESSIONS_STORE } from './mockData';
-
-const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
-
-let store: SessionRequest[] = [...INITIAL_SESSIONS_STORE];
+import { apiClient } from './client';
 
 export const sessionApi = {
   async getSessionRequests(): Promise<SessionRequest[]> {
-    await delay();
-    return [...store];
+    try {
+      const res = await apiClient.get<any[]>('/admin/session-requests');
+      return (res.data || []).map((s: any) => ({
+        id: s.id,
+        offerId: s.offerId,
+        requesterId: s.requesterId,
+        requesterName: s.requester?.name || 'Requester',
+        requesterEmail: s.requester?.email || '',
+        alumniName: s.offer?.alumni?.name || 'Alumnus',
+        topic: s.offer?.topic || 'Mentorship',
+        message: s.message || '',
+        status: (s.status || 'PENDING') as SessionStatus,
+        createdAt: s.createdAt ? new Date(s.createdAt).toISOString() : new Date().toISOString()
+      }));
+    } catch {
+      return [];
+    }
   },
 
   async updateStatus(id: string, status: SessionStatus): Promise<SessionRequest> {
-    await delay();
-    const item = store.find((s) => s.id === id);
-    if (!item) throw new Error(`Session request ${id} not found`);
-    item.status = status;
-    return { ...item };
+    const res = await apiClient.patch<any>(`/sessions/requests/${id}/status`, { status });
+    return {
+      id: res.id,
+      offerId: res.offerId,
+      requesterId: res.requesterId,
+      topic: res.topic || 'Mentorship',
+      message: res.message || '',
+      status: res.status as SessionStatus,
+      createdAt: res.createdAt
+    };
   },
 
   async acceptSessionRequest(id: string): Promise<SessionRequest> {
@@ -26,5 +41,5 @@ export const sessionApi = {
 
   async markSessionDone(id: string): Promise<SessionRequest> {
     return this.updateStatus(id, 'DONE');
-  },
+  }
 };

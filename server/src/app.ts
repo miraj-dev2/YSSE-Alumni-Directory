@@ -19,16 +19,28 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
+const allowedOrigins = new Set([
+  env.CLIENT_ORIGIN,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000'
+]);
+
 app.use(
   cors({
-    origin: env.CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.has(origin) || env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      return callback(new Error('Blocked by CORS policy'));
+    },
     credentials: true
   })
 );
 
 app.use(cookieParser());
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Static files for photo uploads
 app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
@@ -38,7 +50,15 @@ app.get('/health', (_req, res) => {
   ok(res, { status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Mount modules
+// Mount modules on both /api and root paths
+const apiRouter = express.Router();
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/alumni', alumniRouter);
+apiRouter.use('/sessions', sessionsRouter);
+apiRouter.use('/admin', adminRouter);
+apiRouter.use('/wings', wingsRouter);
+
+app.use('/api', apiRouter);
 app.use('/auth', authRouter);
 app.use('/alumni', alumniRouter);
 app.use('/sessions', sessionsRouter);

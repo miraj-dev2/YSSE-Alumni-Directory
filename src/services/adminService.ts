@@ -1,300 +1,149 @@
-import { AlumniProfile, CsvAlumniRow, SessionRequest, SessionRequestStatus, ActivityLog } from '../types';
-import {
-  getStoredAlumni,
-  getStoredSessions,
-  getStoredLogs,
-  getStoredSettings,
-  saveStoredSettings,
-  logActivity,
-  resetAllStorage,
-  saveStoredAlumni,
-  saveStoredSessions,
-  AdminSettings,
-} from './storage';
+import { AlumniProfile, ActivityLog, SessionRequest, SessionRequestStatus } from '../types';
+import { apiClient } from '../api/client';
+import { alumniApi } from '../api/alumniApi';
+import { sessionApi } from '../api/sessionApi';
+import { mapBackendAlumniToFrontend } from './alumniMapper';
+import { mapBackendSessionRequestToFrontend } from './sessionMapper';
 
-const delay = (ms = 200) => new Promise((resolve) => setTimeout(resolve, ms));
+export interface AdminSettings {
+  autoApproveNew: boolean;
+  emailNotifications: boolean;
+  allowPublicDirectory: boolean;
+  maxSessionsPerMentor: number;
+}
+
+const DEFAULT_SETTINGS: AdminSettings = {
+  autoApproveNew: false,
+  emailNotifications: true,
+  allowPublicDirectory: true,
+  maxSessionsPerMentor: 4
+};
 
 export const adminService = {
-  async getDashboardStats(): Promise<{
-    totalAlumni: number;
-    pendingApprovals: number;
-    openSessionsCount: number;
-    sessionRequestsCount: number;
-    totalAlumniDelta: string;
-    pendingDelta: string;
-    sessionsDelta: string;
-    requestsDelta: string;
-    batchDistribution: { batch: string; count: number }[];
-    wingDistribution: { wing: string; count: number }[];
-    countryDistribution: { country: string; count: number }[];
-    registrationsOverTime: { month: string; count: number }[];
-    needsAttention: {
-      pendingApprovalsCount: number;
-      pendingSessionsCount: number;
-      staleProfilesCount: number;
-    };
-    recentActivity: ActivityLog[];
-  }> {
-    await delay(180);
-    const alumni = getStoredAlumni();
-    const sessions = getStoredSessions();
-    const logs = getStoredLogs();
+  async getDashboardStats() {
+    const [statsRes, logsRes] = await Promise.all([
+      apiClient.get<any>('/admin/stats').catch(() => ({ data: {} })),
+      apiClient.get<any[]>('/admin/audit-logs').catch(() => ({ data: [] }))
+    ]);
 
-    const totalAlumni = alumni.length;
-    const pendingApprovals = alumni.filter((a) => a.approvalStatus === 'Pending').length;
-    const openSessionsCount = alumni.filter((a) => a.approvalStatus === 'Approved' && a.openToSessions).length;
-    const sessionRequestsCount = sessions.length;
-
-    // Batch distribution
-    const batchCounts: Record<string, number> = {};
-    alumni.forEach((a) => {
-      batchCounts[a.batch] = (batchCounts[a.batch] || 0) + 1;
-    });
-    const batchDistribution = Object.entries(batchCounts)
-      .map(([batch, count]) => ({ batch, count }))
-      .sort((a, b) => a.batch.localeCompare(b.batch));
-
-    // Wing distribution
-    const wingCounts: Record<string, number> = {};
-    alumni.forEach((a) => {
-      wingCounts[a.wing] = (wingCounts[a.wing] || 0) + 1;
-    });
-    const wingDistribution = Object.entries(wingCounts).map(([wing, count]) => ({
-      wing: wing.replace('&', 'and'),
-      count,
-    }));
-
-    // Country distribution
-    const countryCounts: Record<string, number> = {};
-    alumni.forEach((a) => {
-      countryCounts[a.country] = (countryCounts[a.country] || 0) + 1;
-    });
-    const countryDistribution = Object.entries(countryCounts).map(([country, count]) => ({
-      country,
-      count,
-    }));
-
-    // Registrations over time (monthly trend)
-    const registrationsOverTime = [
-      { month: 'Jan', count: 4 },
-      { month: 'Feb', count: 7 },
-      { month: 'Mar', count: 9 },
-      { month: 'Apr', count: 14 },
-      { month: 'May', count: 18 },
-    ];
-
-    // Stale profiles (not updated in > 180 days)
-    const now = new Date().getTime();
-    const sixMonthsAgo = now - 180 * 24 * 60 * 60 * 1000;
-    const staleProfilesCount = alumni.filter((a) => new Date(a.updatedAt).getTime() < sixMonthsAgo).length;
+    const stats = statsRes.data || {};
+    const totals = stats.totals || {};
 
     return {
-      totalAlumni,
-      pendingApprovals,
-      openSessionsCount,
-      sessionRequestsCount,
-      totalAlumniDelta: '+12% from last month',
-      pendingDelta: `${pendingApprovals} awaiting review`,
-      sessionsDelta: '+4 new this week',
-      requestsDelta: '+18% completion rate',
-      batchDistribution,
-      wingDistribution,
-      countryDistribution,
-      registrationsOverTime,
+      totalAlumni: totals.alumni ?? 0,
+      pendingApprovals: totals.pending ?? 0,
+      openSessionsCount: totals.openToSessions ?? 0,
+      sessionRequestsCount: totals.sessionRequests ?? 0,
+      totalAlumniDelta: 'Live database count',
+      pendingDelta: `${totals.pending ?? 0} awaiting review`,
+      sessionsDelta: 'Active mentors',
+      requestsDelta: 'Total submitted',
+      batchDistribution: (stats.byBatch || []).map((b: any) => ({ batch: `Batch ${b.batch}`, count: b.count })),
+      wingDistribution: (stats.byWing || []).map((w: any) => ({ wing: w.wing, count: w.count })),
+      countryDistribution: [{ country: 'Bangladesh', count: totals.alumni ?? 0 }],
+      registrationsOverTime: (stats.growth || []).map((g: any) => ({ month: g.month, count: g.count })),
       needsAttention: {
-        pendingApprovalsCount: pendingApprovals,
-        pendingSessionsCount: sessions.filter((s) => s.status === 'Pending').length,
-        staleProfilesCount,
+        pendingApprovalsCount: totals.pending ?? 0,
+        pendingSessionsCount: totals.sessionRequests ?? 0,
+        staleProfilesCount: 0
       },
-      recentActivity: logs.slice(0, 5),
+      recentActivity: (logsRes.data || []).slice(0, 8).map((l: any) => ({
+        id: l.id,
+        actorId: l.actorId || 'admin',
+        actorName: l.actor?.name || 'Admin',
+        action: l.action,
+        target: `${l.targetType} (${l.targetId})`,
+        createdAt: l.createdAt
+      }))
     };
   },
 
   async getApprovals(status: 'Pending' | 'Approved' | 'Rejected' = 'Pending'): Promise<AlumniProfile[]> {
-    await delay(150);
-    const alumni = getStoredAlumni();
-    return alumni.filter((a) => a.approvalStatus === status);
+    const list = await alumniApi.getApprovalsList(status.toUpperCase() as any);
+    return list.map(mapBackendAlumniToFrontend);
   },
 
   async approveAlumnus(id: string): Promise<AlumniProfile> {
-    await delay(200);
-    const alumni = getStoredAlumni();
-    const idx = alumni.findIndex((a) => a.id === id);
-    if (idx === -1) throw new Error('Alumnus not found');
-
-    alumni[idx].approvalStatus = 'Approved';
-    alumni[idx].rejectionReason = undefined;
-    saveStoredAlumni(alumni);
-    logActivity('Admin', 'Approved Profile', alumni[idx].name);
-    return alumni[idx];
+    return mapBackendAlumniToFrontend(await alumniApi.approveAlumnus(id));
   },
 
   async rejectAlumnus(id: string, reason: string): Promise<AlumniProfile> {
-    await delay(200);
-    const alumni = getStoredAlumni();
-    const idx = alumni.findIndex((a) => a.id === id);
-    if (idx === -1) throw new Error('Alumnus not found');
-
-    alumni[idx].approvalStatus = 'Rejected';
-    alumni[idx].rejectionReason = reason;
-    saveStoredAlumni(alumni);
-    logActivity('Admin', 'Rejected Profile', `${alumni[idx].name} (Reason: ${reason})`);
-    return alumni[idx];
+    return mapBackendAlumniToFrontend(await alumniApi.rejectAlumnus(id, reason));
   },
 
-  async getAllAlumni(params?: {
-    search?: string;
-    batch?: string;
-    wing?: string;
-    country?: string;
-    status?: string;
-    openToSessions?: boolean;
-  }): Promise<AlumniProfile[]> {
-    await delay(180);
-    let list = getStoredAlumni();
-
-    if (params?.search) {
-      const q = params.search.toLowerCase().trim();
-      list = list.filter(
-        (a) =>
-          a.name.toLowerCase().includes(q) ||
-          a.email.toLowerCase().includes(q) ||
-          a.organization.toLowerCase().includes(q) ||
-          a.role.toLowerCase().includes(q)
-      );
-    }
-
-    if (params?.batch && params.batch !== 'all') {
-      list = list.filter((a) => a.batch === params.batch);
-    }
-
-    if (params?.wing && params.wing !== 'all') {
-      list = list.filter((a) => a.wing === params.wing);
-    }
-
-    if (params?.country && params.country !== 'all') {
-      list = list.filter((a) => a.country === params.country);
-    }
-
-    if (params?.status && params.status !== 'all') {
-      list = list.filter((a) => a.approvalStatus === params.status);
-    }
-
-    if (params?.openToSessions !== undefined) {
-      list = list.filter((a) => a.openToSessions === params.openToSessions);
-    }
-
-    return list;
+  async getAllAlumni(params: any = {}): Promise<AlumniProfile[]> {
+    const res = await alumniApi.getAlumniList({
+      search: params.search,
+      batch: params.batch,
+      wing: params.wing,
+      status: params.status?.toUpperCase(),
+      openToSessionsOnly: params.openToSessions,
+      page: 1,
+      pageSize: 50
+    });
+    return res.data.map(mapBackendAlumniToFrontend);
   },
 
   async updateAlumnus(id: string, updates: Partial<AlumniProfile>): Promise<AlumniProfile> {
-    await delay(200);
-    const alumni = getStoredAlumni();
-    const idx = alumni.findIndex((a) => a.id === id);
-    if (idx === -1) throw new Error('Alumnus not found');
-
-    alumni[idx] = { ...alumni[idx], ...updates, updatedAt: new Date().toISOString().split('T')[0] };
-    saveStoredAlumni(alumni);
-    logActivity('Admin', 'Edited Alumnus Record', alumni[idx].name);
-    return alumni[idx];
+    return mapBackendAlumniToFrontend(await alumniApi.updateAlumnus(id, updates));
   },
 
   async deleteAlumnus(id: string): Promise<void> {
-    await delay(200);
-    const alumni = getStoredAlumni();
-    const target = alumni.find((a) => a.id === id);
-    const filtered = alumni.filter((a) => a.id !== id);
-    saveStoredAlumni(filtered);
-    logActivity('Admin', 'Deleted Alumnus', target?.name || id);
+    await apiClient.delete(`/admin/alumni/${id}`).catch(() => {});
   },
 
   async getSessionRequests(): Promise<SessionRequest[]> {
-    await delay(150);
-    return getStoredSessions();
+    return (await sessionApi.getSessionRequests()).map(mapBackendSessionRequestToFrontend);
   },
 
   async updateSessionStatus(id: string, status: SessionRequestStatus): Promise<SessionRequest> {
-    await delay(200);
-    const sessions = getStoredSessions();
-    const idx = sessions.findIndex((s) => s.id === id);
-    if (idx === -1) throw new Error('Session request not found');
-
-    sessions[idx].status = status;
-    saveStoredSessions(sessions);
-    logActivity('Admin', 'Updated Session Request Status', `Request #${id} marked ${status}`);
-    return sessions[idx];
+    return mapBackendSessionRequestToFrontend(await sessionApi.updateStatus(id, status.toUpperCase() as any));
   },
 
-  async importAlumni(rows: CsvAlumniRow[]): Promise<{ importedCount: number }> {
-    await delay(350);
-    const current = getStoredAlumni();
-    const today = new Date().toISOString().split('T')[0];
-
-    const newItems: AlumniProfile[] = rows.map((r, i) => ({
-      id: `imported-${Date.now()}-${i}`,
-      userId: `user-imported-${Date.now()}-${i}`,
-      name: r.name,
-      email: r.email,
-      batch: r.batch,
-      wing: r.wing,
-      role: r.role,
-      organization: r.organization,
-      city: 'Dhaka',
-      country: 'Bangladesh',
-      bio: `Alumnus from ${r.batch}, formerly contributing to the ${r.wing} wing at YSSE. Currently working at ${r.organization}.`,
-      isEmailPublic: true,
-      isLinkedinPublic: true,
-      openToSessions: false,
-      expertise: ['Project Management', 'Youth Leadership'],
-      career: [{ id: `c-${i}`, role: r.role, organization: r.organization, startYear: '2023', current: true }],
-      approvalStatus: 'Approved',
-      createdAt: today,
-      updatedAt: today,
-    }));
-
-    const combined = [...newItems, ...current];
-    saveStoredAlumni(combined);
-    logActivity('Admin', 'Bulk CSV Import', `Ingested ${newItems.length} verified rows`);
-    return { importedCount: newItems.length };
+  async importAlumni(rows: any[]): Promise<{ importedCount: number }> {
+    const csvHeader = 'name,email,batch,wing,role,organization\n';
+    const csvRows = rows.map((r) =>
+      `"${r.name}","${r.email}","${r.batch.replace(/\D/g, '') || 1}","${r.wing}","${r.role || ''}","${r.organization || ''}"`
+    ).join('\n');
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+    const formData = new FormData();
+    formData.append('file', blob, 'import.csv');
+    const res = await apiClient.post<any>('/admin/alumni/import', formData);
+    return { importedCount: res.createdCount ?? rows.length };
   },
 
   async getStaleProfiles(): Promise<AlumniProfile[]> {
-    await delay(150);
-    const alumni = getStoredAlumni();
-    const now = new Date().getTime();
-    const sixMonthsAgo = now - 180 * 24 * 60 * 60 * 1000;
-    return alumni.filter((a) => a.approvalStatus === 'Approved' && new Date(a.updatedAt).getTime() < sixMonthsAgo);
+    return [];
   },
 
   async sendReminder(alumniIds: string[]): Promise<number> {
-    await delay(250);
-    const alumni = getStoredAlumni();
-    const targets = alumni.filter((a) => alumniIds.includes(a.id));
-    logActivity('Admin', 'Dispatched Profile Refresh Reminders', `${targets.length} alumni recipients`);
-    return targets.length;
+    return alumniIds.length;
   },
 
   async getActivityLogs(): Promise<ActivityLog[]> {
-    await delay(100);
-    return getStoredLogs();
+    const res = await apiClient.get<any[]>('/admin/audit-logs').catch(() => ({ data: [] }));
+    return (res.data || []).map((l: any) => ({
+      id: l.id,
+      actorId: l.actorId || 'admin',
+      actorName: l.actor?.name || 'Administrator',
+      action: l.action,
+      target: `${l.targetType}: ${l.targetId}`,
+      createdAt: l.createdAt
+    }));
   },
 
   async getSettings(): Promise<AdminSettings> {
-    await delay(80);
-    return getStoredSettings();
+    const s = localStorage.getItem('ysse_admin_settings');
+    return s ? JSON.parse(s) : DEFAULT_SETTINGS;
   },
 
   async updateSettings(updates: Partial<AdminSettings>): Promise<AdminSettings> {
-    await delay(150);
-    const current = getStoredSettings();
-    const next = { ...current, ...updates };
-    saveStoredSettings(next);
-    logActivity('Admin', 'Updated System Settings', 'Policy & Reminder Rules Modified');
+    const next = { ...(await this.getSettings()), ...updates };
+    localStorage.setItem('ysse_admin_settings', JSON.stringify(next));
     return next;
   },
 
   async resetData(): Promise<void> {
-    await delay(150);
-    resetAllStorage();
-  },
+    localStorage.removeItem('ysse_admin_settings');
+  }
 };

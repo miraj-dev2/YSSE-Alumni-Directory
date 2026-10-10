@@ -1,149 +1,113 @@
-// DEMO API: Alumni & Approvals service with in-memory persistence
 import { AlumniProfile, AlumniStatus, PaginatedAlumniQuery, PaginatedResponse } from '../types/admin';
-import { INITIAL_ALUMNI_STORE } from './mockData';
+import { apiClient } from './client';
 
-const delay = (ms = 120) => new Promise((resolve) => setTimeout(resolve, ms));
-let store: AlumniProfile[] = [...INITIAL_ALUMNI_STORE];
+const mapAdminProfile = (a: any): AlumniProfile => ({
+  id: a.id,
+  name: a.name || '',
+  email: a.email || '',
+  batch: typeof a.batch === 'number' ? `Batch ${a.batch}` : (a.batch || 'Batch 1'),
+  wing: a.wing || '',
+  currentRole: a.currentRole || 'Member',
+  organization: a.organization || 'YSSE Global',
+  location: a.location || 'Dhaka, Bangladesh',
+  linkedinUrl: a.linkedinUrl || '',
+  photoUrl: a.photoUrl || undefined,
+  isContactPublic: Boolean(a.isContactPublic),
+  openToSessions: Boolean(a.openToSessions),
+  status: (a.status || 'PENDING') as AlumniStatus,
+  rejectionReason: a.rejectionReason || undefined,
+  submittedAt: a.createdAt || new Date().toISOString(),
+  updatedAt: a.updatedAt || new Date().toISOString()
+});
 
 export const alumniApi = {
   async getAlumniList(query: PaginatedAlumniQuery): Promise<PaginatedResponse<AlumniProfile>> {
-    await delay();
-    let list = [...store];
+    const rawBatch = query.batch && query.batch !== 'all' ? query.batch.replace(/\D/g, '') : undefined;
+    const params: Record<string, any> = {
+      q: query.search?.trim() || undefined,
+      batch: rawBatch ? parseInt(rawBatch, 10) : undefined,
+      wing: query.wing && query.wing !== 'all' ? query.wing : undefined,
+      status: query.status && query.status !== 'all' ? query.status : undefined,
+      openToSessions: query.openToSessionsOnly ? true : undefined,
+      sort: query.sortBy === 'name' ? 'name_asc' : query.sortBy === 'batch' ? 'batch_desc' : 'recent',
+      page: query.page || 1,
+      pageSize: query.pageSize || 10
+    };
 
-    if (query.search?.trim()) {
-      const q = query.search.trim().toLowerCase();
-      list = list.filter((a) =>
-        a.name.toLowerCase().includes(q) ||
-        a.organization.toLowerCase().includes(q) ||
-        a.currentRole.toLowerCase().includes(q)
-      );
-    }
-    if (query.batch && query.batch !== 'all') {
-      list = list.filter((a) => a.batch.toLowerCase() === query.batch!.toLowerCase());
-    }
-    if (query.wing && query.wing !== 'all') {
-      list = list.filter((a) => a.wing.toLowerCase() === query.wing!.toLowerCase());
-    }
-    if (query.status && query.status !== 'all') {
-      list = list.filter((a) => a.status === query.status);
-    }
-    if (query.openToSessionsOnly) {
-      list = list.filter((a) => a.openToSessions);
-    }
-    if (query.sortBy) {
-      const field = query.sortBy;
-      const order = query.sortOrder === 'desc' ? -1 : 1;
-      list.sort((a, b) => {
-        const valA = (a[field] || '').toString().toLowerCase();
-        const valB = (b[field] || '').toString().toLowerCase();
-        return valA.localeCompare(valB) * order;
-      });
-    }
+    const res = await apiClient.get<any[]>('/admin/alumni', params);
+    const data = (res.data || []).map(mapAdminProfile);
+    const meta = (res.meta as any) || {};
 
-    const total = list.length;
-    const pageSize = query.pageSize || 10;
-    const page = query.page || 1;
-    const totalPages = Math.ceil(total / pageSize) || 1;
-    const start = (page - 1) * pageSize;
-    return { data: list.slice(start, start + pageSize), page, pageSize, total, totalPages };
+    return {
+      data,
+      page: meta.page ?? 1,
+      pageSize: meta.pageSize ?? 10,
+      total: meta.total ?? data.length,
+      totalPages: meta.totalPages ?? Math.ceil(data.length / 10)
+    };
   },
 
   async getApprovalsList(status: AlumniStatus = 'PENDING'): Promise<AlumniProfile[]> {
-    await delay();
-    return store.filter((a) => a.status === status);
+    const res = await apiClient.get<any[]>('/admin/alumni', { status, pageSize: 50 });
+    return (res.data || []).map(mapAdminProfile);
   },
 
   async approveAlumnus(id: string): Promise<AlumniProfile> {
-    await delay();
-    const item = store.find((a) => a.id === id);
-    if (!item) throw new Error(`Alumnus ${id} not found`);
-    item.status = 'APPROVED';
-    item.updatedAt = new Date().toISOString().split('T')[0];
-    return { ...item };
+    const res = await apiClient.patch<any>(`/admin/alumni/${id}/status`, { status: 'APPROVED' });
+    return mapAdminProfile(res);
   },
 
-  async bulkApprove(ids: string[]): Promise<AlumniProfile[]> {
-    await delay(150);
-    const updated: AlumniProfile[] = [];
-    ids.forEach((id) => {
-      const item = store.find((a) => a.id === id);
-      if (item) {
-        item.status = 'APPROVED';
-        item.updatedAt = new Date().toISOString().split('T')[0];
-        updated.push({ ...item });
-      }
+  async rejectAlumnus(id: string, reason = 'Document verification failed'): Promise<AlumniProfile> {
+    const res = await apiClient.patch<any>(`/admin/alumni/${id}/status`, {
+      status: 'REJECTED',
+      reason: reason.trim() || 'Incomplete verification information'
     });
-    return updated;
+    return mapAdminProfile(res);
   },
 
-  async rejectAlumnus(id: string, reason: string): Promise<AlumniProfile> {
-    await delay();
-    const item = store.find((a) => a.id === id);
-    if (!item) throw new Error(`Alumnus ${id} not found`);
-    item.status = 'REJECTED';
-    item.rejectionReason = reason;
-    item.updatedAt = new Date().toISOString().split('T')[0];
-    return { ...item };
-  },
-
-  async bulkReject(ids: string[], reason: string): Promise<AlumniProfile[]> {
-    await delay(150);
-    const updated: AlumniProfile[] = [];
-    ids.forEach((id) => {
-      const item = store.find((a) => a.id === id);
-      if (item) {
-        item.status = 'REJECTED';
-        item.rejectionReason = reason;
-        item.updatedAt = new Date().toISOString().split('T')[0];
-        updated.push({ ...item });
-      }
+  async bulkUpdateStatus(ids: string[], status: AlumniStatus, reason?: string) {
+    return apiClient.post<{ affected: number }>('/admin/alumni/bulk-status', {
+      ids,
+      status,
+      reason: reason || (status === 'REJECTED' ? 'Verification incomplete' : undefined)
     });
-    return updated;
   },
 
-  async createAlumnus(data: Omit<AlumniProfile, 'id' | 'status'>): Promise<AlumniProfile> {
-    await delay();
-    const today = new Date().toISOString().split('T')[0];
-    const newItem: AlumniProfile = {
-      ...data,
-      id: `alm-${Date.now()}`,
-      status: 'APPROVED',
-      updatedAt: today,
-      submittedAt: today,
-    };
-    store.unshift(newItem);
-    return newItem;
+  async bulkApprove(ids: string[]) {
+    return this.bulkUpdateStatus(ids, 'APPROVED');
   },
 
-  async updateAlumnus(id: string, data: Partial<AlumniProfile>): Promise<AlumniProfile> {
-    await delay();
-    const idx = store.findIndex((a) => a.id === id);
-    if (idx === -1) throw new Error(`Alumnus ${id} not found`);
-    store[idx] = { ...store[idx], ...data, updatedAt: new Date().toISOString().split('T')[0] };
-    return { ...store[idx] };
+  async bulkReject(ids: string[], reason: string) {
+    return this.bulkUpdateStatus(ids, 'REJECTED', reason);
   },
 
   async deleteAlumnus(id: string): Promise<void> {
-    await delay();
-    store = store.filter((a) => a.id !== id);
-  },
-
-  async importAlumni(rows: Omit<AlumniProfile, 'id' | 'status'>[]): Promise<{ imported: number }> {
-    await delay(200);
-    const today = new Date().toISOString().split('T')[0];
-    const newItems: AlumniProfile[] = rows.map((r, i) => ({
-      ...r,
-      id: `alm-import-${Date.now()}-${i}`,
-      status: 'APPROVED',
-      submittedAt: today,
-      updatedAt: today,
-    }));
-    store.unshift(...newItems);
-    return { imported: newItems.length };
+    await apiClient.delete(`/admin/alumni/${id}`).catch(() => {});
   },
 
   async getAllExistingEmails(): Promise<string[]> {
-    await delay(40);
-    return store.map((a) => a.email.toLowerCase());
+    const res = await this.getAlumniList({ page: 1, pageSize: 500 });
+    return res.data.map((a) => a.email.toLowerCase());
   },
+
+  async importAlumni(rows: any[]) {
+    const csvHeader = 'name,email,batch,wing,role,organization\n';
+    const csvRows = rows.map((r) =>
+      `"${r.name}","${r.email}","${r.batch.replace(/\D/g, '') || 1}","${r.wing}","${r.role || ''}","${r.organization || ''}"`
+    ).join('\n');
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+    const formData = new FormData();
+    formData.append('file', blob, 'import.csv');
+    return apiClient.post<any>('/admin/alumni/import', formData);
+  },
+
+  async createAlumnus(data: any): Promise<AlumniProfile> {
+    const res = await apiClient.post<any>('/admin/alumni', data);
+    return mapAdminProfile(res);
+  },
+
+  async updateAlumnus(id: string, data: any): Promise<AlumniProfile> {
+    const res = await apiClient.patch<any>(`/admin/alumni/${id}`, data);
+    return mapAdminProfile(res);
+  }
 };
