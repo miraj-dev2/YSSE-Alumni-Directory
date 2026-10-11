@@ -30,6 +30,7 @@ export const mapBackendAlumniToFrontend = (item: any): AlumniProfile => {
     sessionFormat: item.sessionFormat || 'Online',
     expertise: item.expertise || ['Social Entrepreneurship', 'Leadership'],
     career: item.career || [],
+    story: item.story || undefined,
     updatedAt: item.updatedAt ? new Date(item.updatedAt).toISOString() : new Date().toISOString(),
     createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
     approvalStatus,

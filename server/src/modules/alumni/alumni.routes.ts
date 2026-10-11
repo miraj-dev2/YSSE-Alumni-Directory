@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   getAlumni,
   getFeatured,
+  getStories,
   getAlumniById,
   getMe,
   createMe,
@@ -29,6 +30,7 @@ alumniRouter.post('/me/photo', authenticate, uploadPhoto, uploadPhotoHandler);
 
 // Public routes
 alumniRouter.get('/featured', optionalAuth, getFeatured);
+alumniRouter.get('/stories', optionalAuth, getStories);
 alumniRouter.get(
   '/',
   publicListLimiter,

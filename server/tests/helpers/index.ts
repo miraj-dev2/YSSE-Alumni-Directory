@@ -32,6 +32,7 @@ export const makeProfile = (overrides?: Partial<{
   status: AlumniStatus;
   isContactPublic: boolean;
   openToSessions: boolean;
+  story: string | null;
 }>) => ({
   id: overrides?.id || 'prof_test_123',
   userId: overrides?.userId ?? 'usr_test_123',
@@ -44,6 +45,7 @@ export const makeProfile = (overrides?: Partial<{
   location: 'Dhaka',
   linkedinUrl: 'https://linkedin.com/in/test',
   bio: 'Passionate about engineering',
+  story: overrides?.story !== undefined ? overrides.story : null,
   photoUrl: '/uploads/test.webp',
   isContactPublic: overrides?.isContactPublic ?? false,
   status: overrides?.status || 'APPROVED',

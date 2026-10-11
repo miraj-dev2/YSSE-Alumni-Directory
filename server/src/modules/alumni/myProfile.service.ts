@@ -46,6 +46,7 @@ export const createMyProfile = async (
       location: data.location,
       linkedinUrl: data.linkedinUrl || null,
       bio: data.bio,
+      story: data.story || null,
       isContactPublic: data.isContactPublic ?? false,
       status: 'PENDING',
       source: 'SELF'
@@ -86,6 +87,7 @@ export const updateMyProfile = async (
         ...(data.location !== undefined && { location: data.location }),
         ...(data.linkedinUrl !== undefined && { linkedinUrl: data.linkedinUrl || null }),
         ...(data.bio !== undefined && { bio: data.bio }),
+        ...(data.story !== undefined && { story: data.story || null }),
         ...(data.isContactPublic !== undefined && { isContactPublic: data.isContactPublic }),
         status: newStatus,
         ...(profile.status === 'REJECTED' ? { rejectionReason: null } : {})

@@ -71,6 +71,7 @@ model AlumniProfile {
   location        String?
   linkedinUrl     String?
   bio             String?
+  story           String?
   photoUrl        String?
   isContactPublic Boolean        @default(false)
   status          AlumniStatus   @default(PENDING)

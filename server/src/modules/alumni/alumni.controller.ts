@@ -107,3 +107,16 @@ export const uploadPhotoHandler = async (
     next(error);
   }
 };
+
+export const getStories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const stories = await alumniService.getAlumniStories(req.user);
+    ok(res, stories);
+  } catch (error) {
+    next(error);
+  }
+};

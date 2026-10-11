@@ -44,6 +44,7 @@ export interface AlumniProfile {
   sessionFormat?: SessionFormat;
   expertise: string[];
   career: CareerEntry[];
+  story?: string;
   updatedAt: string;
   approvalStatus: ApprovalStatus;
   rejectionReason?: string;

@@ -7,22 +7,26 @@ import { LandingHeroSection } from '../components/landing/LandingHeroSection';
 import { LandingStatsSection } from '../components/landing/LandingStatsSection';
 import { LandingFindSection } from '../components/landing/LandingFindSection';
 import { LandingCarouselSection } from '../components/landing/LandingCarouselSection';
+import { LandingStoriesSection } from '../components/landing/LandingStoriesSection';
 import { LandingSessionsSection } from '../components/landing/LandingSessionsSection';
 import { LandingGuideSection } from '../components/landing/LandingGuideSection';
 
 export const LandingPage: React.FC = () => {
   const [featuredAlumni, setFeaturedAlumni] = useState<AlumniProfile[]>([]);
   const [sessionsOffered, setSessionsOffered] = useState<AlumniProfile[]>([]);
+  const [stories, setStories] = useState<AlumniProfile[]>([]);
   const [allAlumni, setAllAlumni] = useState<AlumniProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       alumniService.getFeaturedAlumni(),
+      alumniService.getSuccessStories(),
       sessionService.getSessionsOffered(),
       alumniService.getAlumni({ pageSize: 100 }),
-    ]).then(([featured, sessions, directoryRes]) => {
+    ]).then(([featured, storiesRes, sessions, directoryRes]) => {
       setFeaturedAlumni(featured);
+      setStories(storiesRes);
       setSessionsOffered(sessions.slice(0, 3));
       setAllAlumni(directoryRes.data);
       setLoading(false);
@@ -43,6 +47,7 @@ export const LandingPage: React.FC = () => {
       <LandingStatsSection stats={stats} />
       <LandingFindSection />
       <LandingCarouselSection loading={loading} featuredAlumni={featuredAlumni} />
+      <LandingStoriesSection stories={stories} />
       <LandingSessionsSection sessionsOffered={sessionsOffered} />
       <LandingGuideSection />
 

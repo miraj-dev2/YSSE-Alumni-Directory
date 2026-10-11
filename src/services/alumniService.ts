@@ -33,6 +33,15 @@ export const alumniService = {
     return (res.data || []).map(mapBackendAlumniToFrontend);
   },
 
+  async getSuccessStories(): Promise<AlumniProfile[]> {
+    try {
+      const res = await apiClient.get<any[]>('/alumni/stories');
+      return (res.data || []).map(mapBackendAlumniToFrontend);
+    } catch {
+      return [];
+    }
+  },
+
   async getAlumniById(id: string): Promise<AlumniProfile | null> {
     try {
       const res = await apiClient.get<any>(`/alumni/${id}`);
@@ -67,6 +76,7 @@ export const alumniService = {
       location: `${profileData.city || 'Dhaka'}, ${profileData.country || 'Bangladesh'}`,
       linkedinUrl: profileData.linkedinUrl || undefined,
       bio: profileData.bio,
+      story: profileData.story || undefined,
       isContactPublic: profileData.isEmailPublic ?? false
     };
 
@@ -83,6 +93,7 @@ export const alumniService = {
       isContactPublic: updates.isEmailPublic
     };
 
+    if (updates.story !== undefined) payload.story = updates.story;
     if (updates.city || updates.country) {
       payload.location = `${updates.city || 'Dhaka'}, ${updates.country || 'Bangladesh'}`;
     }

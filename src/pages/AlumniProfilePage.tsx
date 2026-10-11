@@ -9,6 +9,7 @@ import { Avatar } from '../components/shared/Avatar';
 import { Timeline } from '../components/shared/Timeline';
 import { AlumniCard } from '../components/shared/AlumniCard';
 import { RequestSessionModal } from '../components/profile/RequestSessionModal';
+import { AlumniStoryCard } from '../components/profile/AlumniStoryCard';
 import {
   ArrowLeft,
   Briefcase,
@@ -208,6 +209,11 @@ export const AlumniProfilePage: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Success Story & Journey Reflection */}
+          {alumnus.story && (
+            <AlumniStoryCard story={alumnus.story} name={alumnus.name} />
+          )}
 
           {/* Career Timeline */}
           <div className="bg-surface border border-border rounded-card p-6">

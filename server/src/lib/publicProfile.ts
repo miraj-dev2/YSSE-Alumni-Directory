@@ -22,6 +22,7 @@ export interface SanitizedAlumniProfile {
   location: string | null;
   photoUrl: string | null;
   bio: string | null;
+  story: string | null;
   openToSessions: boolean;
   isContactPublic: boolean;
   email?: string;
@@ -59,6 +60,7 @@ export const mapProfileToView = (
     location: profile.location,
     photoUrl: profile.photoUrl,
     bio: profile.bio,
+    story: profile.story,
     isContactPublic: profile.isContactPublic,
     openToSessions: isOpenToSessions
   };

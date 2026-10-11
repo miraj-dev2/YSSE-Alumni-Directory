@@ -29,6 +29,7 @@ const profileSchema = z.object({
   city: z.string().min(2, 'City is required'),
   country: z.string().min(2, 'Country is required'),
   bio: z.string().min(10, 'Please write a short bio (at least 10 characters)').max(600),
+  story: z.string().max(3000, 'Story cannot exceed 3,000 characters').optional().or(z.literal('')),
   linkedinUrl: z.string().url('Please enter a valid LinkedIn URL').or(z.literal('')),
   isEmailPublic: z.boolean(),
   isLinkedinPublic: z.boolean(),
@@ -68,6 +69,7 @@ export const MyProfilePage: React.FC = () => {
       city: 'Dhaka',
       country: 'Bangladesh',
       bio: '',
+      story: '',
       linkedinUrl: '',
       isEmailPublic: true,
       isLinkedinPublic: true,
@@ -116,6 +118,7 @@ export const MyProfilePage: React.FC = () => {
             city: found.city,
             country: found.country,
             bio: found.bio,
+            story: found.story || '',
             linkedinUrl: found.linkedinUrl || '',
             isEmailPublic: found.isEmailPublic,
             isLinkedinPublic: found.isLinkedinPublic,
@@ -495,6 +498,28 @@ export const MyProfilePage: React.FC = () => {
               className="input-base h-auto py-2.5 resize-none"
             />
             {errors.bio && <p className="text-xs text-status-rejected mt-1">{errors.bio.message}</p>}
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="input-story" className="block text-xs font-semibold text-text">
+                Success Story & YSSE Reflection <span className="text-muted font-normal">(Optional)</span>
+              </label>
+              <span className="text-[11px] font-mono text-muted">
+                {(watchedValues.story?.length || 0)} / 3000
+              </span>
+            </div>
+            <textarea
+              id="input-story"
+              rows={5}
+              {...register('story')}
+              placeholder="Share how YSSE shaped your career journey, key milestones, challenges overcome, or advice for aspiring youth..."
+              className="input-base h-auto py-2.5 resize-none"
+            />
+            <p className="text-[11px] text-muted mt-1">
+              Your story will be featured on your public profile and on the Alumni Success Stories showcase to inspire current members.
+            </p>
+            {errors.story && <p className="text-xs text-status-rejected mt-1">{errors.story.message}</p>}
           </div>
 
           {/* Core Expertise Tags */}

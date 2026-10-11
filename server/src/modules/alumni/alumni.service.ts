@@ -53,6 +53,25 @@ export const getFeaturedAlumni = async (viewer?: ViewerContext | null) => {
   return shuffled.map((p) => mapProfileToView(p, viewer));
 };
 
+export const getAlumniStories = async (viewer?: ViewerContext | null) => {
+  const stories = await prisma.alumniProfile.findMany({
+    where: {
+      status: 'APPROVED',
+      story: { not: null }
+    },
+    take: 12,
+    orderBy: { updatedAt: 'desc' },
+    include: {
+      wing: true,
+      sessionOffers: { where: { isActive: true }, select: { id: true, isActive: true } }
+    }
+  });
+
+  return stories
+    .filter((p) => p.story && p.story.trim().length > 0)
+    .map((p) => mapProfileToView(p, viewer));
+};
+
 export const getAlumniById = async (id: string, viewer?: ViewerContext | null) => {
   const profile = await prisma.alumniProfile.findUnique({
     where: { id },
