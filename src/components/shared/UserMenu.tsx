@@ -1,6 +1,6 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from './Avatar';
 import {
@@ -8,16 +8,13 @@ import {
   GraduationCap,
   Shield,
   LogOut,
-  Repeat,
   Calendar,
-  Layers,
   LogIn,
   UserPlus,
 } from 'lucide-react';
 
 export const UserMenu: React.FC = () => {
-  const { user, role, logout, loginAs, openAuthModal } = useAuth();
-  const navigate = useNavigate();
+  const { user, role, logout, openAuthModal } = useAuth();
 
   if (!user || role === 'visitor') {
     return (
@@ -41,11 +38,6 @@ export const UserMenu: React.FC = () => {
       </div>
     );
   }
-
-  const handleSwitchToMemberView = async () => {
-    await loginAs('member');
-    navigate('/alumni');
-  };
 
   return (
     <DropdownMenu.Root>
@@ -113,36 +105,18 @@ export const UserMenu: React.FC = () => {
           </DropdownMenu.Item>
 
           {role === 'admin' && (
-            <>
-              <DropdownMenu.Item asChild>
-                <Link
-                  to="/admin"
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover text-status-pending cursor-pointer outline-none transition-colors font-medium"
-                >
-                  <Shield className="w-4 h-4" />
-                  <span>Admin Portal</span>
-                </Link>
-              </DropdownMenu.Item>
-
-              <DropdownMenu.Item
-                onClick={handleSwitchToMemberView}
-                className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover cursor-pointer outline-none transition-colors text-muted"
+            <DropdownMenu.Item asChild>
+              <Link
+                to="/admin"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover text-status-pending cursor-pointer outline-none transition-colors font-medium"
               >
-                <Repeat className="w-4 h-4" />
-                <span>Switch to Member View</span>
-              </DropdownMenu.Item>
-            </>
+                <Shield className="w-4 h-4" />
+                <span>Admin Portal</span>
+              </Link>
+            </DropdownMenu.Item>
           )}
 
           <DropdownMenu.Separator className="h-px bg-border my-1" />
-
-          <DropdownMenu.Item
-            onClick={() => openAuthModal('login')}
-            className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover cursor-pointer outline-none transition-colors text-muted"
-          >
-            <Layers className="w-4 h-4" />
-            <span>Switch Role / Account</span>
-          </DropdownMenu.Item>
 
           <DropdownMenu.Item
             onClick={logout}

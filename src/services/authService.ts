@@ -40,21 +40,14 @@ export const authService = {
     };
   },
 
-  async loginWithCredentials(email: string, _password?: string): Promise<User> {
-    const normalized = email.trim().toLowerCase();
-    const roleParam = normalized.includes('admin') ? 'ADMIN' : 'MEMBER';
-    const nameCandidate = email.split('@')[0].replace(/[._-]/g, ' ');
-    const name = nameCandidate.charAt(0).toUpperCase() + nameCandidate.slice(1);
-
-    const res = await apiClient.post<any>('/auth/dev-login', {
-      email: normalized,
-      name,
-      role: roleParam
+  async loginWithCredentials(email: string, password?: string): Promise<User> {
+    const res = await apiClient.post<any>('/auth/login', {
+      email: email.trim().toLowerCase(),
+      password: password || ''
     });
 
     const u = res.user;
-    const role: UserRole =
-      u.role === 'ADMIN' ? 'admin' : normalized.includes('alumni') ? 'alumni' : 'member';
+    const role: UserRole = u.role === 'ADMIN' ? 'admin' : 'member';
 
     return {
       id: u.id,
@@ -73,22 +66,25 @@ export const authService = {
     password?: string;
     role: 'member' | 'alumni';
   }): Promise<User> {
-    return this.loginWithCredentials(data.email);
-  },
+    const res = await apiClient.post<any>('/auth/register', {
+      name: data.name.trim(),
+      email: data.email.trim().toLowerCase(),
+      password: data.password || '',
+      role: data.role.toUpperCase()
+    });
 
-  async loginAs(role: UserRole): Promise<User | null> {
-    if (role === 'visitor') {
-      await this.logout();
-      return null;
-    }
+    const u = res.user;
+    const role: UserRole = u.role === 'ADMIN' ? 'admin' : data.role;
 
-    const emailMap: Record<string, string> = {
-      admin: 'admin@ysseglobal.org',
-      alumni: 'alumni@ysseglobal.org',
-      member: 'member@ysseglobal.org'
+    return {
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      avatarUrl: u.avatarUrl || undefined,
+      role,
+      interests: ['Social Entrepreneurship'],
+      lastLoginAt: new Date().toISOString()
     };
-
-    return this.loginWithCredentials(emailMap[role] || 'member@ysseglobal.org');
   },
 
   async logout(): Promise<void> {

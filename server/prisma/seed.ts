@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { hashPassword } from '../src/lib/password.js';
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,25 @@ async function main() {
     });
   }
 
-  console.log('✅ Official wings synced (0 mock alumni profiles).');
+  // Ensure default administrator account exists
+  const adminEmail = 'admin@ysseglobal.org';
+  const adminPasswordHash = hashPassword('Admin@ysse2026!');
+
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      role: 'ADMIN',
+      passwordHash: adminPasswordHash
+    },
+    create: {
+      email: adminEmail,
+      name: 'YSSE Administrator',
+      role: 'ADMIN',
+      passwordHash: adminPasswordHash
+    }
+  });
+
+  console.log('✅ Official wings & Administrator account synced.');
 }
 
 main()

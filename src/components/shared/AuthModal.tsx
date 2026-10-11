@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { AuthLoginForm } from './AuthLoginForm';
 import { AuthRegisterForm } from './AuthRegisterForm';
-import { UserRole } from '../../types';
 
 export const AuthModal: React.FC = () => {
   const {
@@ -14,8 +13,6 @@ export const AuthModal: React.FC = () => {
     loginWithCredentials,
     registerUser,
     loginWithGoogle,
-    loginAs,
-    role: currentRole
   } = useAuth();
 
   const { success, error } = useToast();
@@ -39,7 +36,12 @@ export const AuthModal: React.FC = () => {
     }
   };
 
-  const handleRegister = async (data: { name: string; email: string; password?: string; role: 'member' | 'alumni' }) => {
+  const handleRegister = async (data: {
+    name: string;
+    email: string;
+    password?: string;
+    role: 'member' | 'alumni';
+  }) => {
     setLoading(true);
     try {
       await registerUser(data);
@@ -55,7 +57,7 @@ export const AuthModal: React.FC = () => {
   const handleGoogle = async () => {
     setLoading(true);
     try {
-      await loginWithGoogle('member');
+      await loginWithGoogle();
       success('Google Sign In', 'Authenticated successfully with Google.');
       closeAuthModal();
     } catch {
@@ -123,24 +125,6 @@ export const AuthModal: React.FC = () => {
         ) : (
           <AuthRegisterForm onSubmit={handleRegister} loading={loading} />
         )}
-
-        <div className="pt-2 border-t border-border/40 text-center">
-          <div className="flex items-center justify-center gap-2 text-[11px] text-muted">
-            <span>Fast Role Test:</span>
-            {(['member', 'alumni', 'admin'] as UserRole[]).map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => loginAs(r)}
-                className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase border transition-colors ${
-                  currentRole === r ? 'border-accent text-accent bg-accent/10' : 'border-border text-muted hover:text-text'
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </Modal>
   );

@@ -5,23 +5,25 @@ import { verifyGoogleIdToken } from './googleVerify.js';
 import { autoClaimAlumniProfile } from './claimProfile.js';
 import { mapProfileToView } from '../../lib/publicProfile.js';
 import { AppError } from '../../lib/AppError.js';
+import { hashPassword, verifyPassword } from '../../lib/password.js';
+import { LoginInput, RegisterInput } from './auth.schema.js';
 
 export const loginWithGoogle = async (idToken: string) => {
   const googleUser = await verifyGoogleIdToken(idToken);
-  const isAdmin = env.ADMIN_EMAILS.includes(googleUser.email);
+  const isAdmin = env.ADMIN_EMAILS.includes(googleUser.email.toLowerCase().trim());
   const targetRole = isAdmin ? 'ADMIN' : 'MEMBER';
 
   const user = await prisma.user.upsert({
     where: { googleId: googleUser.googleId },
     update: {
-      email: googleUser.email,
+      email: googleUser.email.toLowerCase().trim(),
       name: googleUser.name,
       avatarUrl: googleUser.avatarUrl,
       role: targetRole
     },
     create: {
       googleId: googleUser.googleId,
-      email: googleUser.email,
+      email: googleUser.email.toLowerCase().trim(),
       name: googleUser.name,
       avatarUrl: googleUser.avatarUrl,
       role: targetRole
@@ -29,37 +31,60 @@ export const loginWithGoogle = async (idToken: string) => {
   });
 
   await autoClaimAlumniProfile(user.id, user.email);
-
   const token = signToken(user.id);
   return { user, token };
 };
 
-export const devLogin = async (
-  email: string,
-  name?: string,
-  requestedRole?: 'ADMIN' | 'MEMBER'
-) => {
-  if (env.NODE_ENV === 'production') {
-    throw AppError.forbidden('Development login disabled in production');
+export const registerWithCredentials = async (input: RegisterInput) => {
+  const normalizedEmail = input.email.toLowerCase().trim();
+  const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  if (existing) {
+    throw AppError.conflict('An account with this email already exists', 'EMAIL_TAKEN');
   }
 
-  const normalized = email.toLowerCase().trim();
-  const isAdmin = env.ADMIN_EMAILS.includes(normalized) || requestedRole === 'ADMIN';
+  const isAdmin = env.ADMIN_EMAILS.includes(normalizedEmail);
   const targetRole = isAdmin ? 'ADMIN' : 'MEMBER';
+  const passwordHash = hashPassword(input.password);
 
-  const user = await prisma.user.upsert({
-    where: { email: normalized },
-    update: {
-      name: name || normalized.split('@')[0],
-      role: targetRole
-    },
-    create: {
-      googleId: `dev_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-      email: normalized,
-      name: name || normalized.split('@')[0],
+  const user = await prisma.user.create({
+    data: {
+      email: normalizedEmail,
+      name: input.name.trim(),
+      passwordHash,
       role: targetRole
     }
   });
+
+  await autoClaimAlumniProfile(user.id, user.email);
+  const token = signToken(user.id);
+  return { user, token };
+};
+
+export const loginWithCredentials = async (input: LoginInput) => {
+  const normalizedEmail = input.email.toLowerCase().trim();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+
+  if (!user) {
+    throw AppError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS');
+  }
+
+  if (!user.passwordHash) {
+    throw AppError.unauthorized(
+      'This account was registered using Google. Please click "Continue with Google".',
+      'USE_GOOGLE_LOGIN'
+    );
+  }
+
+  const isValid = verifyPassword(input.password, user.passwordHash);
+  if (!isValid) {
+    throw AppError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS');
+  }
+
+  const isAdmin = env.ADMIN_EMAILS.includes(normalizedEmail);
+  if (isAdmin && user.role !== 'ADMIN') {
+    await prisma.user.update({ where: { id: user.id }, data: { role: 'ADMIN' } });
+    user.role = 'ADMIN';
+  }
 
   await autoClaimAlumniProfile(user.id, user.email);
   const token = signToken(user.id);

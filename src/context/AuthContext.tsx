@@ -8,7 +8,6 @@ interface AuthContextType {
   user: User | null;
   role: UserRole;
   isLoading: boolean;
-  loginAs: (role: UserRole) => Promise<void>;
   loginWithCredentials: (email: string, password?: string) => Promise<void>;
   registerUser: (data: {
     name: string;
@@ -16,17 +15,13 @@ interface AuthContextType {
     password?: string;
     role: 'member' | 'alumni';
   }) => Promise<void>;
-  loginWithGoogle: (role?: UserRole) => Promise<void>;
+  loginWithGoogle: (idToken?: string) => Promise<void>;
   updateUserAccount: (updates: Partial<User>) => Promise<User>;
   logout: () => Promise<void>;
-  // Auth Modal State
   isAuthModalOpen: boolean;
   authModalMode: AuthModalMode;
   openAuthModal: (mode?: AuthModalMode) => void;
   closeAuthModal: () => void;
-  // Backward compatibility alias
-  isRoleSelectorOpen: boolean;
-  setIsRoleSelectorOpen: (open: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,20 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, []);
 
-  const loginAs = async (targetRole: UserRole) => {
-    setIsLoading(true);
-    const updated = await authService.loginAs(targetRole);
-    setUser(updated);
-    setIsLoading(false);
-    setIsAuthModalOpen(false);
-  };
-
   const loginWithCredentials = async (email: string, password?: string) => {
     setIsLoading(true);
-    const loggedIn = await authService.loginWithCredentials(email, password);
-    setUser(loggedIn);
-    setIsLoading(false);
-    setIsAuthModalOpen(false);
+    try {
+      const loggedIn = await authService.loginWithCredentials(email, password);
+      setUser(loggedIn);
+      setIsAuthModalOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const registerUser = async (data: {
@@ -67,18 +57,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     role: 'member' | 'alumni';
   }) => {
     setIsLoading(true);
-    const registered = await authService.registerUser(data);
-    setUser(registered);
-    setIsLoading(false);
-    setIsAuthModalOpen(false);
+    try {
+      const registered = await authService.registerUser(data);
+      setUser(registered);
+      setIsAuthModalOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const loginWithGoogle = async (targetRole?: UserRole) => {
+  const loginWithGoogle = async (idToken?: string) => {
     setIsLoading(true);
-    const loggedIn = await authService.loginWithGoogle(targetRole || 'member');
-    setUser(loggedIn);
-    setIsLoading(false);
-    setIsAuthModalOpen(false);
+    try {
+      const loggedIn = await authService.loginWithGoogle(idToken || '');
+      setUser(loggedIn);
+      setIsAuthModalOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateUserAccount = async (updates: Partial<User>) => {
@@ -111,7 +107,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         role,
         isLoading,
-        loginAs,
         loginWithCredentials,
         registerUser,
         loginWithGoogle,
@@ -121,12 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authModalMode,
         openAuthModal,
         closeAuthModal,
-        // Backward compatibility
-        isRoleSelectorOpen: isAuthModalOpen,
-        setIsRoleSelectorOpen: (open: boolean) => {
-          if (open) openAuthModal('login');
-          else closeAuthModal();
-        },
       }}
     >
       {children}

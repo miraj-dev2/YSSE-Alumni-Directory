@@ -14,7 +14,7 @@ export const AuthRegisterForm: React.FC<AuthRegisterFormProps> = ({ onSubmit, lo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim()) return;
+    if (!name.trim() || !email.trim() || !password) return;
     onSubmit({ name, email, password, role });
   };
 
@@ -42,7 +42,7 @@ export const AuthRegisterForm: React.FC<AuthRegisterFormProps> = ({ onSubmit, lo
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@example.com"
+            placeholder="your.email@domain.com"
             required
             className="input-base text-xs pl-9"
           />
@@ -51,13 +51,15 @@ export const AuthRegisterForm: React.FC<AuthRegisterFormProps> = ({ onSubmit, lo
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-text mb-1">Password</label>
+        <label className="block text-xs font-medium text-text mb-1">Password (min 6 characters)</label>
         <div className="relative">
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Create password"
+            required
+            minLength={6}
             className="input-base text-xs pl-9"
           />
           <Lock className="w-4 h-4 text-muted absolute left-3 top-3.5" />

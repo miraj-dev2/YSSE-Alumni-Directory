@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
-import { RoleSwitcherModal } from '../components/shared/RoleSwitcherModal';
+import { AuthModal } from '../components/shared/AuthModal';
 
 export const RootLayout: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ export const RootLayout: React.FC = () => {
         <Outlet />
       </main>
       <Footer />
-      <RoleSwitcherModal />
+      <AuthModal />
     </div>
   );
 };

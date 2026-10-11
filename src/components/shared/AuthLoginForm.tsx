@@ -12,7 +12,7 @@ export const AuthLoginForm: React.FC<AuthLoginFormProps> = ({ onSubmit, loading 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !password) return;
     onSubmit(email, password);
   };
 
@@ -25,7 +25,7 @@ export const AuthLoginForm: React.FC<AuthLoginFormProps> = ({ onSubmit, loading 
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="name@example.com"
+            placeholder="your.email@domain.com"
             required
             className="input-base text-xs pl-9"
           />
@@ -42,7 +42,8 @@ export const AuthLoginForm: React.FC<AuthLoginFormProps> = ({ onSubmit, loading 
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter password"
+            placeholder="Enter your password"
+            required
             className="input-base text-xs pl-9"
           />
           <Lock className="w-4 h-4 text-muted absolute left-3 top-3.5" />
