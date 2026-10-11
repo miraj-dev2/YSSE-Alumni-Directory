@@ -32,16 +32,23 @@ export const AlumniCard: React.FC<AlumniCardProps> = ({ alumni }) => {
           )}
 
           {/* Badges on photo */}
-          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2 pointer-events-none">
+          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1 pointer-events-none">
             <span className="chip bg-bg/90 backdrop-blur-sm text-muted border-border-strong text-[10px]">
               {alumni.batch}
             </span>
-            {alumni.openToSessions && (
-              <span className="chip bg-accent text-on-accent font-semibold text-[10px] border-transparent">
-                <Sparkles className="w-3 h-3 text-on-accent" />
-                <span>Mentoring</span>
-              </span>
-            )}
+            <div className="flex items-center gap-1">
+              {alumni.story && (
+                <span className="chip bg-surface/90 backdrop-blur-sm text-accent text-[9px] border-accent/30 font-medium">
+                  Story
+                </span>
+              )}
+              {alumni.openToSessions && (
+                <span className="chip bg-accent text-on-accent font-semibold text-[10px] border-transparent">
+                  <Sparkles className="w-3 h-3 text-on-accent" />
+                  <span>Mentoring</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
 

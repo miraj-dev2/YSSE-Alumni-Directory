@@ -11,25 +11,21 @@ enum Role {
   ADMIN
   MEMBER
 }
-
 enum AlumniStatus {
   PENDING
   APPROVED
   REJECTED
 }
-
 enum Source {
   SELF
   CSV
   ADMIN
 }
-
 enum Mode {
   ONLINE
   OFFLINE
   BOTH
 }
-
 enum RequestStatus {
   PENDING
   ACCEPTED
@@ -82,7 +78,7 @@ model AlumniProfile {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   sessionOffers   SessionOffer[]
-
+  talks           AlumniTalk[]
   @@index([status, batch])
   @@index([wingId])
   @@index([email])
@@ -98,7 +94,6 @@ model SessionOffer {
   isActive    Boolean          @default(true)
   createdAt   DateTime         @default(now())
   requests    SessionRequest[]
-
   @@index([alumniId])
 }
 
@@ -112,9 +107,29 @@ model SessionRequest {
   status      RequestStatus @default(PENDING)
   createdAt   DateTime      @default(now())
   respondedAt DateTime?
-
   @@unique([offerId, requesterId])
   @@index([requesterId])
+}
+
+model AlumniTalk {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  topic        String
+  speakerName  String
+  speakerRole  String?
+  speakerOrg   String?
+  speakerPhoto String?
+  speakerId    String?
+  speaker      AlumniProfile? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+  talkDate     DateTime
+  recordingUrl String?
+  liveUrl      String?
+  isFeatured   Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  @@index([speakerId])
+  @@index([talkDate])
 }
 
 model AuditLog {
@@ -126,7 +141,6 @@ model AuditLog {
   targetId   String
   meta       Json?
   createdAt  DateTime @default(now())
-
   @@index([actorId])
   @@index([targetType, targetId])
 }

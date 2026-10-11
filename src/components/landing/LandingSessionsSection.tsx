@@ -14,14 +14,14 @@ export const LandingSessionsSection: React.FC<SessionsProps> = ({ sessionsOffere
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold font-heading text-text">
-            1:1 Mentorship Offers
+            Alumni Talk & Knowledge Sharing
           </h2>
           <p className="text-xs text-muted mt-0.5">
-            Book dedicated advisory sessions with verified alumni.
+            Explore knowledge-sharing sessions and book advisory office hours with alumni.
           </p>
         </div>
-        <Link to="/sessions" className="btn-secondary !min-h-[38px] h-[38px] text-xs px-3.5 gap-1.5">
-          <span>See all sessions</span>
+        <Link to="/alumni-talk" className="btn-secondary !min-h-[38px] h-[38px] text-xs px-3.5 gap-1.5">
+          <span>Explore Alumni Talk</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
@@ -50,7 +50,7 @@ export const LandingSessionsSection: React.FC<SessionsProps> = ({ sessionsOffere
                 <Link to={`/alumni/${mentor.id}`} className="text-xs text-muted hover:text-text">
                   View Profile
                 </Link>
-                <Link to="/sessions" className="btn-primary !min-h-[36px] h-[36px] text-xs px-3 gap-1">
+                <Link to="/alumni-talk" className="btn-primary !min-h-[36px] h-[36px] text-xs px-3 gap-1">
                   <Calendar className="w-3 h-3" />
                   <span>Request Session</span>
                 </Link>

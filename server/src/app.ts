@@ -9,6 +9,7 @@ import { alumniRouter } from './modules/alumni/alumni.routes.js';
 import { sessionsRouter } from './modules/sessions/sessions.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
 import { wingsRouter } from './modules/wings/wings.routes.js';
+import { talksRouter } from './modules/talks/talks.routes.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { ok } from './lib/apiResponse.js';
@@ -60,6 +61,7 @@ apiRouter.use('/alumni', alumniRouter);
 apiRouter.use('/sessions', sessionsRouter);
 apiRouter.use('/admin', adminRouter);
 apiRouter.use('/wings', wingsRouter);
+apiRouter.use('/talks', talksRouter);
 
 app.use('/api', apiRouter);
 app.use('/auth', authRouter);
@@ -67,6 +69,7 @@ app.use('/alumni', alumniRouter);
 app.use('/sessions', sessionsRouter);
 app.use('/admin', adminRouter);
 app.use('/wings', wingsRouter);
+app.use('/talks', talksRouter);
 
 // 404 & Global Error Handling
 app.use(notFound);

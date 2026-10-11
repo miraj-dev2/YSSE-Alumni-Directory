@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { UserMenu } from '../shared/UserMenu';
-import { Menu, X, Users, Calendar, Sparkles } from 'lucide-react';
+import { Menu, X, Users, Video, Sparkles } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -61,7 +61,7 @@ export const Navbar: React.FC = () => {
             </NavLink>
 
             <NavLink
-              to="/sessions"
+              to="/alumni-talk"
               className={({ isActive }) =>
                 `px-3.5 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
@@ -71,8 +71,8 @@ export const Navbar: React.FC = () => {
               }
             >
               <span className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span>Sessions</span>
+                <Video className="w-4 h-4" />
+                <span>Alumni Talk</span>
               </span>
             </NavLink>
           </nav>
@@ -120,7 +120,7 @@ export const Navbar: React.FC = () => {
             <span>Alumni Directory</span>
           </NavLink>
           <NavLink
-            to="/sessions"
+            to="/alumni-talk"
             onClick={closeMenu}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
@@ -128,8 +128,8 @@ export const Navbar: React.FC = () => {
               }`
             }
           >
-            <Calendar className="w-4 h-4 text-accent" />
-            <span>Mentorship Sessions</span>
+            <Video className="w-4 h-4 text-accent" />
+            <span>Alumni Talk</span>
           </NavLink>
         </div>
       )}

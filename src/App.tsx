@@ -57,7 +57,8 @@ export const App: React.FC = () => {
                   <Route index element={<LandingPage />} />
                   <Route path="alumni" element={<DirectoryPage />} />
                   <Route path="alumni/:id" element={<AlumniProfilePage />} />
-                  <Route path="sessions" element={<SessionsPage />} />
+                  <Route path="alumni-talk" element={<SessionsPage />} />
+                  <Route path="sessions" element={<Navigate to="/alumni-talk" replace />} />
 
                   {/* Account Settings (Member, Alumni, Admin) */}
                   <Route

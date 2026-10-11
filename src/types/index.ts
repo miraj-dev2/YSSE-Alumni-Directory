@@ -98,6 +98,23 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
+export interface AlumniTalk {
+  id: string;
+  title: string;
+  description?: string;
+  topic: string;
+  speakerName: string;
+  speakerRole?: string;
+  speakerOrg?: string;
+  speakerPhoto?: string;
+  speakerId?: string;
+  talkDate: string;
+  recordingUrl?: string;
+  liveUrl?: string;
+  isFeatured: boolean;
+  createdAt: string;
+}
+
 export interface CsvAlumniRow {
   name: string;
   email: string;

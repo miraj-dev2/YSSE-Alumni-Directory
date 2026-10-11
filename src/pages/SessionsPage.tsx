@@ -22,18 +22,29 @@ import {
   X,
   CheckCircle,
   Info,
+  Video,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { talkService } from '../services/talkService';
+import { TalksRecordingsList } from '../components/talks/TalksRecordingsList';
+import { AddTalkModal } from '../components/talks/AddTalkModal';
 
 export const SessionsPage: React.FC = () => {
   const { user, role, openAuthModal } = useAuth();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<'offers' | 'my-requests' | 'to-me'>('offers');
+  const [activeTab, setActiveTab] = useState<'recordings' | 'offers' | 'my-requests' | 'to-me'>('recordings');
   const [formatFilter, setFormatFilter] = useState<'all' | SessionFormat>('all');
   const [topicSearch, setTopicSearch] = useState('');
   const [selectedMentor, setSelectedMentor] = useState<AlumniProfile | null>(null);
+  const [isAddTalkOpen, setIsAddTalkOpen] = useState(false);
+
+  // Fetch recorded talks
+  const { data: talks = [], isLoading: loadingTalks, refetch: refetchTalks } = useQuery({
+    queryKey: ['alumniTalks'],
+    queryFn: () => talkService.getTalks(),
+  });
 
   // Fetch mentorship offers
   const { data: rawOffers = [], isLoading: loadingOffers } = useQuery({
@@ -90,16 +101,31 @@ export const SessionsPage: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-4xl font-bold font-heading text-text">
-          Mentorship & Office Hours
+          Alumni Talk & Knowledge Sharing
         </h1>
         <p className="text-sm text-muted mt-1 max-w-2xl leading-relaxed">
-          Book 1:1 sessions with verified YSSE alumni for resume critiques, tech interviews,
-          startup advice, and graduate school insights.
+          Watch recorded sessions from YSSE alumni talks and panels, or book 1:1 advisory office hours
+          with verified fellows across global industries.
         </p>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-border pb-px overflow-x-auto">
+        <button
+          onClick={() => setActiveTab('recordings')}
+          className={`flex items-center gap-2 pb-3 px-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
+            activeTab === 'recordings'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-muted hover:text-text'
+          }`}
+        >
+          <Video className="w-4 h-4" />
+          <span>Talks & Recordings</span>
+          <span className="chip bg-surface-hover text-accent text-[10px] ml-1">
+            {talks.length}
+          </span>
+        </button>
+
         <button
           onClick={() => setActiveTab('offers')}
           className={`flex items-center gap-2 pb-3 px-3 text-xs font-semibold border-b-2 transition-colors whitespace-nowrap ${
@@ -109,7 +135,7 @@ export const SessionsPage: React.FC = () => {
           }`}
         >
           <Sparkles className="w-4 h-4" />
-          <span>Browse Offers</span>
+          <span>Available Speakers & Mentors</span>
           <span className="chip bg-surface-hover text-muted text-[10px] ml-1">
             {filteredOffers.length}
           </span>
@@ -124,7 +150,7 @@ export const SessionsPage: React.FC = () => {
           }`}
         >
           <Send className="w-4 h-4" />
-          <span>My Requests</span>
+          <span>My Bookings</span>
           {user && (
             <span className="chip bg-surface-hover text-muted text-[10px] ml-1">
               {myRequests.length}
@@ -149,6 +175,15 @@ export const SessionsPage: React.FC = () => {
           </button>
         )}
       </div>
+
+      {/* Tab 0: Alumni Talks & Recordings */}
+      {activeTab === 'recordings' && (
+        <TalksRecordingsList
+          talks={talks}
+          loading={loadingTalks}
+          onAddClick={() => setIsAddTalkOpen(true)}
+        />
+      )}
 
       {/* Tab 1: Browse Offers */}
       {activeTab === 'offers' && (
@@ -459,6 +494,15 @@ export const SessionsPage: React.FC = () => {
           alumnus={selectedMentor}
         />
       )}
+
+      {/* Admin Add Talk Modal */}
+      <AddTalkModal
+        isOpen={isAddTalkOpen}
+        onClose={() => setIsAddTalkOpen(false)}
+        onSuccess={() => refetchTalks()}
+      />
     </div>
   );
 };
+
+export const AlumniTalkPage = SessionsPage;
