@@ -34,6 +34,14 @@ export interface SanitizedAlumniProfile {
   updatedAt?: Date;
 }
 
+/**
+ * Sanitizes alumni profile fields based on the viewer's permission context.
+ * 
+ * Security Guarantee:
+ * - Anonymous visitors NEVER receive email or LinkedIn URLs.
+ * - Authenticated users only receive contact details if isContactPublic is true,
+ *   or if they are the profile owner, or if they have ADMIN privileges.
+ */
 export const mapProfileToView = (
   profile: ProfileWithRelations,
   viewer?: ViewerContext | null

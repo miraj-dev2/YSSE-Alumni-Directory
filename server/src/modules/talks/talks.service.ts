@@ -2,6 +2,9 @@ import { prisma } from '../../lib/prisma.js';
 import { AppError } from '../../lib/AppError.js';
 import { TalkQueryInput, CreateTalkInput, UpdateTalkInput } from './talks.schema.js';
 
+/**
+ * Retrieves recorded talks & upcoming panels matching search terms and filters.
+ */
 export const getTalks = async (query: TalkQueryInput) => {
   const where: any = {};
 
@@ -39,6 +42,9 @@ export const getTalks = async (query: TalkQueryInput) => {
   return talks;
 };
 
+/**
+ * Retrieves a single talk by its unique ID.
+ */
 export const getTalkById = async (id: string) => {
   const talk = await prisma.alumniTalk.findUnique({
     where: { id },
@@ -64,6 +70,9 @@ export const getTalkById = async (id: string) => {
   return talk;
 };
 
+/**
+ * Creates and publishes a new Alumni Talk session.
+ */
 export const createTalk = async (data: CreateTalkInput) => {
   const talk = await prisma.alumniTalk.create({
     data: {
@@ -85,6 +94,9 @@ export const createTalk = async (data: CreateTalkInput) => {
   return talk;
 };
 
+/**
+ * Updates an existing talk entry.
+ */
 export const updateTalk = async (id: string, data: UpdateTalkInput) => {
   await getTalkById(id);
 
@@ -101,6 +113,9 @@ export const updateTalk = async (id: string, data: UpdateTalkInput) => {
   return updated;
 };
 
+/**
+ * Permanently deletes a talk record.
+ */
 export const deleteTalk = async (id: string) => {
   await getTalkById(id);
   await prisma.alumniTalk.delete({ where: { id } });

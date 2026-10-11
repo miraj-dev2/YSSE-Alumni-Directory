@@ -8,6 +8,10 @@ import { AppError } from '../../lib/AppError.js';
 import { hashPassword, verifyPassword } from '../../lib/password.js';
 import { LoginInput, RegisterInput } from './auth.schema.js';
 
+/**
+ * Authenticates via Google OAuth ID token. Verifies signature,
+ * creates or syncs the User record, and claims any matching alumni roster profile.
+ */
 export const loginWithGoogle = async (idToken: string) => {
   const googleUser = await verifyGoogleIdToken(idToken);
   const isAdmin = env.ADMIN_EMAILS.includes(googleUser.email.toLowerCase().trim());
@@ -35,6 +39,10 @@ export const loginWithGoogle = async (idToken: string) => {
   return { user, token };
 };
 
+/**
+ * Registers a new user with salt+scrypt password hashing.
+ * Elevates to ADMIN if email matches official secretariat list.
+ */
 export const registerWithCredentials = async (input: RegisterInput) => {
   const normalizedEmail = input.email.toLowerCase().trim();
   const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -60,6 +68,10 @@ export const registerWithCredentials = async (input: RegisterInput) => {
   return { user, token };
 };
 
+/**
+ * Authenticates user credentials using timing-safe scrypt password check.
+ * Issues signed JWT and syncs role permissions.
+ */
 export const loginWithCredentials = async (input: LoginInput) => {
   const normalizedEmail = input.email.toLowerCase().trim();
   const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -91,6 +103,9 @@ export const loginWithCredentials = async (input: LoginInput) => {
   return { user, token };
 };
 
+/**
+ * Retrieves the authenticated user's session with sanitized profile data.
+ */
 export const getCurrentUser = async (userId: string) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },

@@ -25,39 +25,21 @@ export const authService = {
   },
 
   async loginWithGoogle(idToken: string): Promise<User> {
-    const res = await apiClient.post<any>('/auth/google', { idToken });
-    const u = res.user;
-    const role: UserRole = u.role === 'ADMIN' ? 'admin' : 'member';
-
-    return {
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      avatarUrl: u.avatarUrl || undefined,
-      role,
-      interests: ['Social Entrepreneurship'],
-      lastLoginAt: new Date().toISOString()
-    };
+    await apiClient.post<any>('/auth/google', { idToken });
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('Failed to retrieve user session');
+    return user;
   },
 
   async loginWithCredentials(email: string, password?: string): Promise<User> {
-    const res = await apiClient.post<any>('/auth/login', {
+    await apiClient.post<any>('/auth/login', {
       email: email.trim().toLowerCase(),
       password: password || ''
     });
 
-    const u = res.user;
-    const role: UserRole = u.role === 'ADMIN' ? 'admin' : 'member';
-
-    return {
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      avatarUrl: u.avatarUrl || undefined,
-      role,
-      interests: ['Community Leadership'],
-      lastLoginAt: new Date().toISOString()
-    };
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('Failed to retrieve user session');
+    return user;
   },
 
   async registerUser(data: {
@@ -66,25 +48,16 @@ export const authService = {
     password?: string;
     role: 'member' | 'alumni';
   }): Promise<User> {
-    const res = await apiClient.post<any>('/auth/register', {
+    await apiClient.post<any>('/auth/register', {
       name: data.name.trim(),
       email: data.email.trim().toLowerCase(),
       password: data.password || '',
       role: data.role.toUpperCase()
     });
 
-    const u = res.user;
-    const role: UserRole = u.role === 'ADMIN' ? 'admin' : data.role;
-
-    return {
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      avatarUrl: u.avatarUrl || undefined,
-      role,
-      interests: ['Social Entrepreneurship'],
-      lastLoginAt: new Date().toISOString()
-    };
+    const user = await this.getCurrentUser();
+    if (!user) throw new Error('Failed to retrieve user session');
+    return user;
   },
 
   async logout(): Promise<void> {
