@@ -20,7 +20,13 @@ export const createProfileSchema = z.object({
   currentRole: z.string().trim().max(100).optional(),
   organization: z.string().trim().max(100).optional(),
   location: z.string().trim().max(100).optional(),
-  linkedinUrl: z.string().trim().url('Invalid LinkedIn URL').optional().or(z.literal('')),
+  linkedinUrl: z
+    .string()
+    .trim()
+    .regex(/^https?:\/\//i, 'LinkedIn URL must start with http:// or https://')
+    .url('Invalid LinkedIn URL')
+    .optional()
+    .or(z.literal('')),
   bio: z.string().trim().max(1000).optional(),
   story: z.string().trim().max(3000).optional().or(z.literal('')),
   isContactPublic: z.boolean().default(false)

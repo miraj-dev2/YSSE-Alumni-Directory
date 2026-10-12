@@ -16,11 +16,26 @@ export const createTalkSchema = z.object({
   speakerName: z.string().trim().min(2).max(100),
   speakerRole: z.string().trim().max(100).optional(),
   speakerOrg: z.string().trim().max(100).optional(),
-  speakerPhoto: z.string().url().or(z.string().startsWith('/uploads/')).optional(),
+  speakerPhoto: z
+    .string()
+    .regex(/^https?:\/\//i, 'URL must start with http:// or https://')
+    .url()
+    .or(z.string().startsWith('/uploads/'))
+    .optional(),
   speakerId: z.string().cuid().optional(),
   talkDate: z.string().datetime(),
-  recordingUrl: z.string().url().optional().or(z.literal('')),
-  liveUrl: z.string().url().optional().or(z.literal('')),
+  recordingUrl: z
+    .string()
+    .regex(/^https?:\/\//i, 'Recording URL must start with http:// or https://')
+    .url()
+    .optional()
+    .or(z.literal('')),
+  liveUrl: z
+    .string()
+    .regex(/^https?:\/\//i, 'Live URL must start with http:// or https://')
+    .url()
+    .optional()
+    .or(z.literal('')),
   isFeatured: z.boolean().default(false)
 });
 

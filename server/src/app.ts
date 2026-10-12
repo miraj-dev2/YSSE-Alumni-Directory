@@ -16,6 +16,10 @@ import { ok } from './lib/apiResponse.js';
 
 export const app = express();
 
+if (env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));

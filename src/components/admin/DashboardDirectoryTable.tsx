@@ -94,7 +94,7 @@ export const DashboardDirectoryTable: React.FC<DashboardDirectoryTableProps> = (
                           <DropdownMenu.Item onClick={() => navigator.clipboard.writeText(alumnus.email)} className="px-2.5 py-1.5 rounded cursor-pointer hover:bg-[#1F3027] outline-none">
                             Copy Email
                           </DropdownMenu.Item>
-                          <DropdownMenu.Item onClick={() => window.open(alumnus.linkedinUrl, '_blank')} className="px-2.5 py-1.5 rounded cursor-pointer hover:bg-[#1F3027] outline-none">
+                          <DropdownMenu.Item onClick={() => { if (/^https?:\/\//i.test(alumnus.linkedinUrl)) window.open(alumnus.linkedinUrl, '_blank', 'noopener,noreferrer'); }} className="px-2.5 py-1.5 rounded cursor-pointer hover:bg-[#1F3027] outline-none">
                             LinkedIn Profile
                           </DropdownMenu.Item>
                         </DropdownMenu.Content>

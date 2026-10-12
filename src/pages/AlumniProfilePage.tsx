@@ -277,7 +277,7 @@ export const AlumniProfilePage: React.FC = () => {
                     LinkedIn Profile
                   </span>
                   {alumnus.isLinkedinPublic || canViewFullContact ? (
-                    alumnus.linkedinUrl ? (
+                    alumnus.linkedinUrl && /^https?:\/\//i.test(alumnus.linkedinUrl) ? (
                       <a
                         href={alumnus.linkedinUrl}
                         target="_blank"

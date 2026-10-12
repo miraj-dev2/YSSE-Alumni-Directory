@@ -16,6 +16,7 @@ import {
 } from './sessions.schema.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { validate } from '../../middleware/validate.js';
+import { stateChangeLimiter } from '../../middleware/rateLimiters.js';
 
 export const sessionsRouter = Router();
 
@@ -23,6 +24,7 @@ sessionsRouter.get('/offers', getOffers);
 sessionsRouter.post(
   '/offers',
   authenticate,
+  stateChangeLimiter,
   validate({ body: createOfferSchema }),
   createOffer
 );
@@ -36,6 +38,7 @@ sessionsRouter.patch(
 sessionsRouter.post(
   '/requests',
   authenticate,
+  stateChangeLimiter,
   validate({ body: createRequestSchema }),
   createRequest
 );

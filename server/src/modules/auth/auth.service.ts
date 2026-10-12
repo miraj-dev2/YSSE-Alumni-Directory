@@ -82,8 +82,8 @@ export const loginWithCredentials = async (input: LoginInput) => {
 
   if (!user.passwordHash) {
     throw AppError.unauthorized(
-      'This account was registered using Google. Please click "Continue with Google".',
-      'USE_GOOGLE_LOGIN'
+      'Invalid email or password. If you registered using Google, please click "Continue with Google".',
+      'INVALID_CREDENTIALS'
     );
   }
 

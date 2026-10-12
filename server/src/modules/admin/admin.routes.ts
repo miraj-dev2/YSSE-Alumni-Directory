@@ -22,6 +22,7 @@ import { authenticate } from '../../middleware/authenticate.js';
 import { requireAdmin } from '../../middleware/requireAdmin.js';
 import { validate } from '../../middleware/validate.js';
 import { uploadCsv } from '../../middleware/upload.js';
+import { uploadLimiter } from '../../middleware/rateLimiters.js';
 
 export const adminRouter = Router();
 
@@ -33,7 +34,7 @@ adminRouter.post('/alumni', validate({ body: adminCreateAlumniSchema }), createA
 adminRouter.patch('/alumni/:id', validate({ body: adminUpdateAlumniSchema }), updateAlumni);
 adminRouter.patch('/alumni/:id/status', validate({ body: updateStatusSchema }), updateStatus);
 adminRouter.post('/alumni/bulk-status', validate({ body: bulkStatusSchema }), bulkStatus);
-adminRouter.post('/alumni/import', uploadCsv, importCsv);
+adminRouter.post('/alumni/import', uploadLimiter, uploadCsv, importCsv);
 adminRouter.get('/alumni/export', validate({ query: adminAlumniQuerySchema }), exportCsv);
 adminRouter.get('/session-requests', getSessionRequests);
 adminRouter.get('/audit-logs', getAuditLogs);

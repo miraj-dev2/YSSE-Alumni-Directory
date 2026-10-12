@@ -17,7 +17,7 @@ import {
 import { validate } from '../../middleware/validate.js';
 import { authenticate } from '../../middleware/authenticate.js';
 import { optionalAuth } from '../../middleware/optionalAuth.js';
-import { publicListLimiter } from '../../middleware/rateLimiters.js';
+import { publicListLimiter, uploadLimiter } from '../../middleware/rateLimiters.js';
 import { uploadPhoto } from '../../middleware/upload.js';
 
 export const alumniRouter = Router();
@@ -26,7 +26,7 @@ export const alumniRouter = Router();
 alumniRouter.get('/me', authenticate, getMe);
 alumniRouter.post('/me', authenticate, validate({ body: createProfileSchema }), createMe);
 alumniRouter.put('/me', authenticate, validate({ body: updateProfileSchema }), updateMe);
-alumniRouter.post('/me/photo', authenticate, uploadPhoto, uploadPhotoHandler);
+alumniRouter.post('/me/photo', authenticate, uploadLimiter, uploadPhoto, uploadPhotoHandler);
 
 // Public routes
 alumniRouter.get('/featured', optionalAuth, getFeatured);
