@@ -67,10 +67,24 @@ export const alumniService = {
 
   async createProfile(profileData: Partial<AlumniProfile>): Promise<AlumniProfile> {
     const rawBatch = profileData.batch ? parseInt(profileData.batch.replace(/\D/g, ''), 10) : 1;
+    let targetWingId = (profileData as any).wingId;
+    if (!targetWingId) {
+      try {
+        const wingsRes = await apiClient.get<any[]>('/wings');
+        const wings = wingsRes.data || [];
+        const match = wings.find((w: any) =>
+          w.name?.toLowerCase() === profileData.wing?.toLowerCase() || w.id === profileData.wing
+        );
+        targetWingId = match ? match.id : wings[0]?.id;
+      } catch {
+        // fallback
+      }
+    }
+
     const payload = {
       name: profileData.name,
-      batch: isNaN(rawBatch) ? 1 : rawBatch,
-      wingId: (profileData as any).wingId || 'wing_1',
+      batch: isNaN(rawBatch) ? new Date().getFullYear() : rawBatch,
+      wingId: targetWingId,
       currentRole: profileData.role,
       organization: profileData.organization,
       location: `${profileData.city || 'Dhaka'}, ${profileData.country || 'Bangladesh'}`,
@@ -123,16 +137,13 @@ export const alumniService = {
     ]);
     const wings = (wingsRes.data || []).map((w: any) => w.name);
     const alumni = alumniRes.data || [];
-
-    const batches = Array.from(new Set(alumni.map((a: any) => `Batch ${a.batch}`))).sort();
-    const companies = Array.from(new Set(alumni.map((a: any) => a.organization).filter(Boolean))).sort();
-    const cities = Array.from(new Set(alumni.map((a: any) => a.location?.split(',')[0]?.trim()).filter(Boolean))).sort();
-    const fields = Array.from(new Set(alumni.map((a: any) => a.currentRole).filter(Boolean))).sort();
-
-    return { batches, wings, companies, cities, fields };
+    return {
+      batches: Array.from(new Set(alumni.map((a: any) => `Batch ${a.batch}`))).sort(),
+      wings,
+      companies: Array.from(new Set(alumni.map((a: any) => a.organization).filter(Boolean))).sort(),
+      cities: Array.from(new Set(alumni.map((a: any) => a.location?.split(',')[0]?.trim()).filter(Boolean))).sort(),
+      fields: Array.from(new Set(alumni.map((a: any) => a.currentRole).filter(Boolean))).sort()
+    };
   },
-
-  getDistinctFilterOptions() {
-    return this.getFilterOptions();
-  }
+  getDistinctFilterOptions() { return this.getFilterOptions(); }
 };

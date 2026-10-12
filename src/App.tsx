@@ -70,11 +70,11 @@ export const App: React.FC = () => {
                     }
                   />
 
-                  {/* My Profile (Alumni Only) */}
+                  {/* My Profile (Alumni and Member setup) */}
                   <Route
                     path="me"
                     element={
-                      <ProtectedRoute allowedRoles={['alumni']}>
+                      <ProtectedRoute allowedRoles={['alumni', 'member']}>
                         <MyProfilePage />
                       </ProtectedRoute>
                     }

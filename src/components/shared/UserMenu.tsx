@@ -94,6 +94,18 @@ export const UserMenu: React.FC = () => {
             </DropdownMenu.Item>
           )}
 
+          {role === 'member' && (
+            <DropdownMenu.Item asChild>
+              <Link
+                to="/me"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover text-accent cursor-pointer outline-none transition-colors font-medium"
+              >
+                <GraduationCap className="w-4 h-4 text-accent" />
+                <span>Create Alumni Profile</span>
+              </Link>
+            </DropdownMenu.Item>
+          )}
+
           <DropdownMenu.Item asChild>
             <Link
               to="/sessions"

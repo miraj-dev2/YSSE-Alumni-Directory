@@ -27,3 +27,42 @@ export const autoClaimAlumniProfile = async (
     logger.error({ error, userId, userEmail }, 'Error during profile auto-claim');
   }
 };
+
+export const ensureAlumniProfile = async (
+  userId: string,
+  userEmail: string,
+  name: string
+): Promise<void> => {
+  try {
+    await autoClaimAlumniProfile(userId, userEmail);
+    const existing = await prisma.alumniProfile.findFirst({
+      where: { OR: [{ userId }, { email: userEmail.toLowerCase().trim() }] }
+    });
+
+    if (!existing) {
+      const defaultWing = await prisma.wing.findFirst({ orderBy: { name: 'asc' } });
+      if (defaultWing) {
+        await prisma.alumniProfile.create({
+          data: {
+            userId,
+            email: userEmail.toLowerCase().trim(),
+            name,
+            batch: new Date().getFullYear(),
+            wingId: defaultWing.id,
+            status: 'PENDING',
+            source: 'SELF'
+          }
+        });
+        logger.info({ userId, email: userEmail }, 'Created initial self alumni profile');
+      }
+    } else if (!existing.userId) {
+      await prisma.alumniProfile.update({
+        where: { id: existing.id },
+        data: { userId }
+      });
+    }
+  } catch (error) {
+    logger.error({ error, userId, userEmail }, 'Error ensuring alumni profile');
+  }
+};
+

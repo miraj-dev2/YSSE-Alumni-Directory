@@ -41,7 +41,7 @@ const profileSchema = z.object({
 type ProfileFormData = z.infer<typeof profileSchema>;
 
 export const MyProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateUserAccount } = useAuth();
   const { success, error } = useToast();
   const [profile, setProfile] = useState<AlumniProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -240,6 +240,7 @@ export const MyProfilePage: React.FC = () => {
           sessionFormat: data.sessionFormat as SessionFormat,
         });
         setProfile(created);
+        await updateUserAccount({ role: 'alumni' }).catch(() => {});
         success('Profile Created', 'Your alumni profile has been submitted for Secretariat review.');
       }
     } catch {
