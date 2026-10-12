@@ -73,17 +73,9 @@ export const alumniApi = {
     });
   },
 
-  async bulkApprove(ids: string[]) {
-    return this.bulkUpdateStatus(ids, 'APPROVED');
-  },
-
-  async bulkReject(ids: string[], reason: string) {
-    return this.bulkUpdateStatus(ids, 'REJECTED', reason);
-  },
-
-  async deleteAlumnus(id: string): Promise<void> {
-    await apiClient.delete(`/admin/alumni/${id}`).catch(() => {});
-  },
+  async bulkApprove(ids: string[]) { return this.bulkUpdateStatus(ids, 'APPROVED'); },
+  async bulkReject(ids: string[], reason: string) { return this.bulkUpdateStatus(ids, 'REJECTED', reason); },
+  async deleteAlumnus(id: string): Promise<void> { await apiClient.delete(`/admin/alumni/${id}`).catch(() => {}); },
 
   async getAllExistingEmails(): Promise<string[]> {
     const res = await this.getAlumniList({ page: 1, pageSize: 500 });
@@ -102,12 +94,53 @@ export const alumniApi = {
   },
 
   async createAlumnus(data: any): Promise<AlumniProfile> {
-    const res = await apiClient.post<any>('/admin/alumni', data);
+    let wingId = data.wingId;
+    if (!wingId) {
+      try {
+        const wingsRes = await apiClient.get<any[]>('/wings');
+        const wings = wingsRes.data || [];
+        const match = wings.find((w: any) =>
+          w.name?.toLowerCase() === data.wing?.toLowerCase() || w.id === data.wing
+        );
+        wingId = match ? match.id : wings[0]?.id;
+      } catch {
+        // fallback
+      }
+    }
+    const rawBatch = typeof data.batch === 'number' ? data.batch : parseInt(String(data.batch).replace(/\D/g, '') || '1', 10);
+    const payload = {
+      ...data,
+      batch: isNaN(rawBatch) ? new Date().getFullYear() : rawBatch,
+      wingId,
+      status: data.status || 'APPROVED'
+    };
+    const res = await apiClient.post<any>('/admin/alumni', payload);
     return mapAdminProfile(res);
   },
 
   async updateAlumnus(id: string, data: any): Promise<AlumniProfile> {
-    const res = await apiClient.patch<any>(`/admin/alumni/${id}`, data);
+    let wingId = data.wingId;
+    if (!wingId && data.wing) {
+      try {
+        const wingsRes = await apiClient.get<any[]>('/wings');
+        const wings = wingsRes.data || [];
+        const match = wings.find((w: any) =>
+          w.name?.toLowerCase() === data.wing?.toLowerCase() || w.id === data.wing
+        );
+        if (match) wingId = match.id;
+      } catch {
+        // fallback
+      }
+    }
+    const rawBatch = data.batch !== undefined
+      ? (typeof data.batch === 'number' ? data.batch : parseInt(String(data.batch).replace(/\D/g, '') || '1', 10))
+      : undefined;
+    const payload = {
+      ...data,
+      ...(rawBatch !== undefined && { batch: rawBatch }),
+      ...(wingId && { wingId })
+    };
+    const res = await apiClient.patch<any>(`/admin/alumni/${id}`, payload);
     return mapAdminProfile(res);
   }
 };

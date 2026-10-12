@@ -49,7 +49,7 @@ export const ensureAlumniProfile = async (
             name,
             batch: new Date().getFullYear(),
             wingId: defaultWing.id,
-            status: 'PENDING',
+            status: 'APPROVED',
             source: 'SELF'
           }
         });

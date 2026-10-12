@@ -48,7 +48,7 @@ export const createMyProfile = async (
       bio: data.bio,
       story: data.story || null,
       isContactPublic: data.isContactPublic ?? false,
-      status: 'PENDING',
+      status: 'APPROVED',
       source: 'SELF'
     },
     include: { wing: true, sessionOffers: true }

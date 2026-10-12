@@ -10,7 +10,7 @@ export const alumniQuerySchema = z.object({
     .optional(),
   sort: z.enum(['name_asc', 'name_desc', 'batch_desc', 'batch_asc', 'recent']).optional(),
   page: z.coerce.number().int().positive().default(1),
-  pageSize: z.coerce.number().int().positive().max(50).default(12)
+  pageSize: z.coerce.number().int().positive().max(100).default(12)
 });
 
 export const createProfileSchema = z.object({

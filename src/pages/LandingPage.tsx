@@ -16,6 +16,7 @@ export const LandingPage: React.FC = () => {
   const [sessionsOffered, setSessionsOffered] = useState<AlumniProfile[]>([]);
   const [stories, setStories] = useState<AlumniProfile[]>([]);
   const [allAlumni, setAllAlumni] = useState<AlumniProfile[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,23 +24,24 @@ export const LandingPage: React.FC = () => {
       alumniService.getFeaturedAlumni(),
       alumniService.getSuccessStories(),
       sessionService.getSessionsOffered(),
-      alumniService.getAlumni({ pageSize: 100 }),
+      alumniService.getAlumni({ pageSize: 50 }),
     ]).then(([featured, storiesRes, sessions, directoryRes]) => {
       setFeaturedAlumni(featured);
       setStories(storiesRes);
       setSessionsOffered(sessions.slice(0, 3));
       setAllAlumni(directoryRes.data);
+      setTotalCount(directoryRes.total || directoryRes.data.length);
       setLoading(false);
     });
   }, []);
 
   const stats = useMemo(() => {
-    const total = allAlumni.length;
-    const batchesCount = new Set(allAlumni.map((a) => a.batch)).size;
-    const companiesCount = new Set(allAlumni.map((a) => a.organization)).size;
+    const total = totalCount || allAlumni.length;
+    const batchesCount = new Set(allAlumni.map((a) => a.batch).filter(Boolean)).size;
+    const companiesCount = new Set(allAlumni.map((a) => a.organization).filter(Boolean)).size;
     const countriesCount = new Set(allAlumni.map((a) => a.country).filter(Boolean)).size;
     return { total, batchesCount, companiesCount, countriesCount };
-  }, [allAlumni]);
+  }, [allAlumni, totalCount]);
 
   return (
     <div className="space-y-16 sm:space-y-24 py-8 sm:py-16">

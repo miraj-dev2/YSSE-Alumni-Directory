@@ -34,11 +34,8 @@ export const getPublicAlumniList = async (
 };
 
 export const getFeaturedAlumni = async (viewer?: ViewerContext | null) => {
-  const approvedWithPhotos = await prisma.alumniProfile.findMany({
-    where: {
-      status: 'APPROVED',
-      photoUrl: { not: null }
-    },
+  let list = await prisma.alumniProfile.findMany({
+    where: { status: 'APPROVED', photoUrl: { not: null } },
     take: 24,
     include: {
       wing: true,
@@ -46,7 +43,19 @@ export const getFeaturedAlumni = async (viewer?: ViewerContext | null) => {
     }
   });
 
-  const shuffled = approvedWithPhotos
+  if (list.length === 0) {
+    list = await prisma.alumniProfile.findMany({
+      where: { status: 'APPROVED' },
+      take: 24,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        wing: true,
+        sessionOffers: { where: { isActive: true }, select: { id: true, isActive: true } }
+      }
+    });
+  }
+
+  const shuffled = list
     .sort(() => 0.5 - Math.random())
     .slice(0, 12);
 

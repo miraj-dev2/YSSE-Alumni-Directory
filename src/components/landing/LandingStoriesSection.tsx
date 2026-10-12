@@ -1,21 +1,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Quote, Sparkles, ArrowRight, BookOpen } from 'lucide-react';
+import { Quote, ArrowRight, BookOpen } from 'lucide-react';
 import { AlumniProfile } from '../../types';
 import { Avatar } from '../shared/Avatar';
+import { useAuth } from '../../context/AuthContext';
 
 interface StoriesSectionProps {
   stories: AlumniProfile[];
 }
 
 export const LandingStoriesSection: React.FC<StoriesSectionProps> = ({ stories }) => {
+  const { role } = useAuth();
+  const isAlumni = role === 'alumni' || role === 'admin';
+
   return (
     <section className="max-w-content mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="chip bg-accent/15 text-accent border-accent/25 text-[11px] font-mono">
-              <Sparkles className="w-3 h-3 inline mr-1" />
               Impact & Journeys
             </span>
           </div>
@@ -27,13 +30,15 @@ export const LandingStoriesSection: React.FC<StoriesSectionProps> = ({ stories }
           </p>
         </div>
 
-        <Link
-          to="/me"
-          className="btn-secondary !min-h-[38px] h-[38px] text-xs px-3.5 gap-1.5 self-start sm:self-auto"
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>Share Your Story</span>
-        </Link>
+        {isAlumni && (
+          <Link
+            to="/me"
+            className="btn-secondary !min-h-[38px] h-[38px] text-xs px-3.5 gap-1.5 self-start sm:self-auto"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Share Your Story</span>
+          </Link>
+        )}
       </div>
 
       {stories.length > 0 ? (
@@ -82,13 +87,17 @@ export const LandingStoriesSection: React.FC<StoriesSectionProps> = ({ stories }
           <BookOpen className="w-8 h-8 text-accent/60 mx-auto" />
           <h3 className="text-sm font-semibold text-text">No stories published yet</h3>
           <p className="text-xs text-muted max-w-md mx-auto">
-            Are you a YSSE alumnus? Add your reflections and career achievements in your profile to inspire fellow youth and newcomers.
+            {isAlumni
+              ? 'Add your reflections and career achievements in your profile to inspire fellow youth and newcomers.'
+              : 'Alumni stories and reflections will be showcased here once published.'}
           </p>
-          <div className="pt-2">
-            <Link to="/me" className="btn-primary !min-h-[36px] h-[36px] text-xs px-4">
-              Add Your Success Story
-            </Link>
-          </div>
+          {isAlumni && (
+            <div className="pt-2">
+              <Link to="/me" className="btn-primary !min-h-[36px] h-[36px] text-xs px-4">
+                Add Your Success Story
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </section>
