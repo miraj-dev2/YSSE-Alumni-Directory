@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Avatar } from './Avatar';
 import {
+  LayoutDashboard,
   User as UserIcon,
   GraduationCap,
   Shield,
   LogOut,
-  Calendar,
   LogIn,
   UserPlus,
 } from 'lucide-react';
@@ -106,15 +106,17 @@ export const UserMenu: React.FC = () => {
             </DropdownMenu.Item>
           )}
 
-          <DropdownMenu.Item asChild>
-            <Link
-              to="/sessions"
-              className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover cursor-pointer outline-none transition-colors"
-            >
-              <Calendar className="w-4 h-4 text-muted" />
-              <span>Mentorship Sessions</span>
-            </Link>
-          </DropdownMenu.Item>
+          {role !== 'admin' && (
+            <DropdownMenu.Item asChild>
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2.5 px-2.5 py-2 rounded-sm hover:bg-surface-hover text-accent cursor-pointer outline-none transition-colors font-medium"
+              >
+                <LayoutDashboard className="w-4 h-4 text-accent" />
+                <span>Personal Dashboard</span>
+              </Link>
+            </DropdownMenu.Item>
+          )}
 
           {role === 'admin' && (
             <DropdownMenu.Item asChild>

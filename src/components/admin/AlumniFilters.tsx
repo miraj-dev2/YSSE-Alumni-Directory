@@ -8,15 +8,26 @@ interface AlumniFiltersProps {
   onExportCsv: () => void;
 }
 
-const BATCHES = ['all', 'Batch 8', 'Batch 7', 'Batch 6', 'Batch 5', 'Batch 4', 'Batch 3', 'Batch 2', 'Batch 1'];
+const BATCHES = [
+  'all',
+  ...Array.from({ length: 17 }, (_, i) => `Batch ${17 - i}`)
+];
 const WINGS = [
   'all',
-  'YSSE IT',
-  'Marketing & PR',
-  'HR & Talent',
-  'Finance & Sponsorship',
-  'Creative & Content',
-  'Operations & Logistics',
+  'Admin & HR Department',
+  'Marketing & PR Department',
+  'Communication Department',
+  'Content Writing Department',
+  'Graphic Design Department',
+  'Video Editing Department',
+  'Operations Management Department',
+  'Business Development Department',
+  'IT Department',
+  'IT: Wing 1 — Web Development & CMS',
+  'IT: Wing 2 — Software & App Engineering',
+  'IT: Wing 3 — Systems Automation & DataOps',
+  'IT: Wing 4 — AI Integration & Cybersecurity',
+  'IT: Wing 5 — Tech Research & Innovation'
 ];
 const STATUSES = ['all', 'APPROVED', 'PENDING', 'REJECTED'];
 

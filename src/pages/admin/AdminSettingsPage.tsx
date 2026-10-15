@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { AdminPageHeader } from '../../components/admin/AdminPageHeader';
-import { Save, Bell, User } from 'lucide-react';
+import { Save, Bell, User, LogOut } from 'lucide-react';
 
 export const AdminSettingsPage: React.FC = () => {
-  const { user, updateUserAccount } = useAuth();
+  const { user, updateUserAccount, logout } = useAuth();
+  const navigate = useNavigate();
   const { success, error } = useToast();
   const [name, setName] = useState(user?.name || 'Administrator');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  const handleLogout = async () => {
+    navigate('/', { replace: true });
+    await logout();
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +101,29 @@ export const AdminSettingsPage: React.FC = () => {
           </button>
         </div>
       </form>
+
+      <div className="bg-[#1F3027] border border-[#2E4336] rounded-[22px] p-6 space-y-4 shadow-sm">
+        <div className="flex items-center gap-2 text-xs font-mono uppercase text-[#E8A598]">
+          <LogOut className="w-4 h-4 text-[#E8A598]" />
+          <span>Account Session</span>
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold text-[#EEF3E8]">Sign Out of Admin Portal</p>
+            <p className="text-[11px] text-[#9DB0A2]">
+              Securely terminate your administrative session and return to the main portal.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="h-[42px] px-5 rounded-full bg-[#382121] border border-[#E8A598]/40 hover:border-[#E8A598] hover:bg-[#482828] text-[#E8A598] text-xs font-bold flex items-center gap-2 transition-colors shrink-0"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

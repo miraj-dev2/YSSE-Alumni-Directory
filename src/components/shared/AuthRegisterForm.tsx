@@ -51,15 +51,15 @@ export const AuthRegisterForm: React.FC<AuthRegisterFormProps> = ({ onSubmit, lo
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-text mb-1">Password (min 6 characters)</label>
+        <label className="block text-xs font-medium text-text mb-1">Password (min 8 characters)</label>
         <div className="relative">
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Create password"
+            placeholder="Create password (min. 8 characters)"
             required
-            minLength={6}
+            minLength={8}
             className="input-base text-xs pl-9"
           />
           <Lock className="w-4 h-4 text-muted absolute left-3 top-3.5" />

@@ -2,6 +2,7 @@ import { RequestStatus, Role } from '@prisma/client';
 import { prisma } from '../../lib/prisma.js';
 import { isValidSessionTransition } from './requestTransitions.js';
 import { AppError } from '../../lib/AppError.js';
+import { createNotification } from '../notifications/notifications.service.js';
 
 export const createSessionRequest = async (
   requesterId: string,
@@ -29,12 +30,25 @@ export const createSessionRequest = async (
     throw AppError.conflict('You have already submitted a request for this offer');
   }
 
-  return prisma.sessionRequest.create({
+  const req = await prisma.sessionRequest.create({
     data: { offerId, requesterId, message },
     include: {
+      requester: { select: { name: true } },
       offer: { include: { alumni: { select: { id: true, name: true, photoUrl: true } } } }
     }
   });
+
+  if (offer.alumni.userId) {
+    createNotification(
+      offer.alumni.userId,
+      'New Session Request',
+      `${req.requester?.name || 'A member'} requested a mentorship session`,
+      'SESSION_REQUEST',
+      '/dashboard/requests'
+    ).catch(() => {});
+  }
+
+  return req;
 };
 
 export const getMyRequests = async (requesterId: string) => {
@@ -76,9 +90,7 @@ export const updateRequestStatus = async (
     include: { offer: { include: { alumni: true } } }
   });
 
-  if (!request) {
-    throw AppError.notFound('Session request not found');
-  }
+  if (!request) throw AppError.notFound('Session request not found');
 
   const isOfferOwner = request.offer.alumni.userId === userId;
   const isAdmin = userRole === 'ADMIN';
@@ -109,5 +121,23 @@ export const updateRequestStatus = async (
     })
   ]);
 
+  createNotification(
+    request.requesterId,
+    `Request ${newStatus}`,
+    `Your request for "${request.offer.topic}" was ${newStatus.toLowerCase()}.`,
+    'SESSION_UPDATE',
+    '/dashboard/sessions'
+  ).catch(() => {});
+
   return updated;
+};
+
+export const cancelSessionRequest = async (userId: string, requestId: string) => {
+  const req = await prisma.sessionRequest.findUnique({ where: { id: requestId } });
+  if (!req) throw AppError.notFound('Session request not found');
+  if (req.requesterId !== userId) throw AppError.forbidden('Only requester can cancel this request');
+  if (req.status !== 'PENDING') throw AppError.badRequest('Only pending requests can be cancelled');
+
+  await prisma.sessionRequest.delete({ where: { id: requestId } });
+  return { success: true };
 };

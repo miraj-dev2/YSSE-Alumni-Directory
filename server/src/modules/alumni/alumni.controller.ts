@@ -120,3 +120,20 @@ export const getStories = async (
     next(error);
   }
 };
+
+export const getSavedAlumniHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { listSavedAlumni } = await import('./savedAlumni.service.js');
+    const saved = await listSavedAlumni(req.user!.id);
+    ok(res, saved);
+  } catch (error) { next(error); }
+};
+
+export const toggleSaveAlumniHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { toggleSaveAlumnus } = await import('./savedAlumni.service.js');
+    const result = await toggleSaveAlumnus(req.user!.id, req.params.id);
+    ok(res, result);
+  } catch (error) { next(error); }
+};
+

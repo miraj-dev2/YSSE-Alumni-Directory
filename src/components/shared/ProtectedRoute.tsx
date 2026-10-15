@@ -25,7 +25,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
         <p className="text-sm text-muted mb-6 leading-relaxed">
           Please sign in to access this page. Members, alumni, and administrators can sign in using their account.
         </p>
-        <div className="flex items-center justify-center gap-2.5">
+        <div className="flex items-center justify-center gap-2.5 mb-4">
           <button
             type="button"
             onClick={() => openAuthModal('login')}
@@ -40,6 +40,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, ch
           >
             Register
           </button>
+        </div>
+        <div>
+          <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-accent transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to Home</span>
+          </Link>
         </div>
       </div>
     );

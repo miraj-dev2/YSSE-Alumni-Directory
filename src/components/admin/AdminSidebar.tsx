@@ -1,8 +1,9 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, UserCheck, CalendarCheck2, FileSpreadsheet, Settings, ArrowLeft, X,
+  LayoutDashboard, Users, UserCheck, CalendarCheck2, FileSpreadsheet, Settings, LogOut, X,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { AdminUser } from '../../types/admin';
 
 interface AdminSidebarProps {
@@ -23,6 +24,14 @@ const PRIMARY_NAV = [
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   isOpen, onClose, pendingApprovalsCount, adminUser,
 }) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    navigate('/', { replace: true });
+    await logout();
+  };
+
   return (
     <>
       {isOpen && (
@@ -36,9 +45,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         <div className="flex flex-col">
           <div className="h-20 px-6 border-b border-[#2E4336] flex items-center justify-between">
             <Link to="/admin" className="flex items-center gap-2.5" onClick={onClose}>
-              <div className="w-8 h-8 rounded-full bg-[#2A4033] border border-[#2E4336] flex items-center justify-center font-heading font-black text-[#B7FF72] text-sm">
-                Y
-              </div>
+              <img src="/ysse-logo.png" alt="YSSE Logo" className="w-8 h-8 rounded-lg object-contain bg-white p-0.5 border border-[#2E4336]" />
               <span className="font-heading font-extrabold text-base tracking-tight text-[#EEF3E8]">
                 YSSE<span className="text-[#B7FF72]">.alumni</span>
               </span>
@@ -99,18 +106,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           </nav>
         </div>
 
-        <div className="p-4 border-t border-[#2E4336] space-y-3">
-          <Link to="/" className="flex items-center gap-2 px-3 py-2 text-xs text-[#9DB0A2] hover:text-[#EEF3E8] hover:bg-[#1F3027] rounded-full transition-colors min-h-[44px]">
-            <ArrowLeft className="w-4 h-4" /> <span>Back to site</span>
-          </Link>
-          <div className="flex items-center gap-2.5 px-3 py-2 bg-[#1F3027] border border-[#2E4336] rounded-full">
-            <div className="w-7 h-7 rounded-full bg-[#2A4033] text-[#B7FF72] font-bold text-xs flex items-center justify-center shrink-0">
-              A
+        <div className="p-4 border-t border-[#2E4336]">
+          <div className="flex items-center justify-between gap-2.5 px-3 py-2 bg-[#1F3027] border border-[#2E4336] rounded-full">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="w-7 h-7 rounded-full bg-[#2A4033] text-[#B7FF72] font-bold text-xs flex items-center justify-center shrink-0">
+                A
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-[#EEF3E8] truncate">{adminUser?.name || 'Administrator'}</p>
+                <p className="text-[10px] font-mono text-[#B7FF72] uppercase leading-none">Admin</p>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-[#EEF3E8] truncate">{adminUser?.name || 'Administrator'}</p>
-              <p className="text-[10px] font-mono text-[#B7FF72] uppercase leading-none">Admin</p>
-            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="p-1.5 text-[#9DB0A2] hover:text-[#E8A598] hover:bg-[#2A4033] rounded-full transition-colors shrink-0"
+              title="Sign Out"
+              aria-label="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </aside>

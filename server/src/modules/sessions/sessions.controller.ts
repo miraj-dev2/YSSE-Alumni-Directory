@@ -110,3 +110,17 @@ export const updateRequestStatus = async (
     next(error);
   }
 };
+
+export const cancelRequest = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const result = await requestsService.cancelSessionRequest(req.user!.id, req.params.id);
+    ok(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -6,7 +6,8 @@ import {
   createRequest,
   getMyRequests,
   getIncomingRequests,
-  updateRequestStatus
+  updateRequestStatus,
+  cancelRequest
 } from './sessions.controller.js';
 import {
   createOfferSchema,
@@ -50,3 +51,5 @@ sessionsRouter.patch(
   validate({ body: updateRequestStatusSchema }),
   updateRequestStatus
 );
+sessionsRouter.delete('/requests/:id', authenticate, cancelRequest);
+

@@ -44,10 +44,16 @@ export const processAndSaveProfilePhoto = async (
 
   const photoUrl = `/uploads/${filename}`;
 
-  await prisma.alumniProfile.update({
-    where: { id: profile.id },
-    data: { photoUrl }
-  });
+  await prisma.$transaction([
+    prisma.alumniProfile.update({
+      where: { id: profile.id },
+      data: { photoUrl }
+    }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: photoUrl }
+    })
+  ]);
 
   return photoUrl;
 };

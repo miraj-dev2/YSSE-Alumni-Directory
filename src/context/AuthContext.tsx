@@ -8,14 +8,14 @@ interface AuthContextType {
   user: User | null;
   role: UserRole;
   isLoading: boolean;
-  loginWithCredentials: (email: string, password?: string) => Promise<void>;
+  loginWithCredentials: (email: string, password?: string) => Promise<User>;
   registerUser: (data: {
     name: string;
     email: string;
     password?: string;
     role: 'member' | 'alumni';
-  }) => Promise<void>;
-  loginWithGoogle: (idToken?: string) => Promise<void>;
+  }) => Promise<User>;
+  loginWithGoogle: (idToken?: string) => Promise<User>;
   updateUserAccount: (updates: Partial<User>) => Promise<User>;
   logout: () => Promise<void>;
   isAuthModalOpen: boolean;
@@ -33,7 +33,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('login');
 
   useEffect(() => {
+    const isSessionActive = sessionStorage.getItem('ysse_session_active');
+    if (!isSessionActive) {
+      authService.logout().finally(() => {
+        setUser(null);
+        setIsLoading(false);
+      });
+      return;
+    }
+
     authService.getCurrentUser().then((currentUser) => {
+      if (!currentUser) sessionStorage.removeItem('ysse_session_active');
       setUser(currentUser);
       setIsLoading(false);
     });
@@ -43,8 +53,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const loggedIn = await authService.loginWithCredentials(email, password);
+      sessionStorage.setItem('ysse_session_active', '1');
       setUser(loggedIn);
       setIsAuthModalOpen(false);
+      return loggedIn;
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +71,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const registered = await authService.registerUser(data);
+      sessionStorage.setItem('ysse_session_active', '1');
       setUser(registered);
       setIsAuthModalOpen(false);
+      return registered;
     } finally {
       setIsLoading(false);
     }
@@ -70,8 +84,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const loggedIn = await authService.loginWithGoogle(idToken || '');
+      sessionStorage.setItem('ysse_session_active', '1');
       setUser(loggedIn);
       setIsAuthModalOpen(false);
+      return loggedIn;
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     setIsLoading(true);
+    sessionStorage.removeItem('ysse_session_active');
     await authService.logout();
     setUser(null);
     setIsLoading(false);

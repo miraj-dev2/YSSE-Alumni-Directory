@@ -7,6 +7,7 @@ import { RootLayout } from './layouts/RootLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { ProtectedRoute } from './components/shared/ProtectedRoute';
 import { AdminRoute } from './routes/AdminRoute';
+import { AuthModal } from './components/shared/AuthModal';
 
 // Public & User Pages
 const LandingPage = lazy(() => import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })));
@@ -25,6 +26,14 @@ const AdminImportPage = lazy(() => import('./pages/admin/AdminImportPage').then(
 const AdminStaleProfilesPage = lazy(() => import('./pages/admin/AdminStaleProfilesPage').then((m) => ({ default: m.AdminStaleProfilesPage })));
 const AdminActivityPage = lazy(() => import('./pages/admin/AdminActivityPage').then((m) => ({ default: m.AdminActivityPage })));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage').then((m) => ({ default: m.AdminSettingsPage })));
+
+// Member & Alumni Portal Pages
+const DashboardLayout = lazy(() => import('./layouts/DashboardLayout').then((m) => ({ default: m.DashboardLayout })));
+const DashboardOverviewPage = lazy(() => import('./pages/dashboard/DashboardOverviewPage').then((m) => ({ default: m.DashboardOverviewPage })));
+const DashboardRequestsPage = lazy(() => import('./pages/dashboard/DashboardRequestsPage').then((m) => ({ default: m.DashboardRequestsPage })));
+const DashboardSessionsPage = lazy(() => import('./pages/dashboard/DashboardSessionsPage').then((m) => ({ default: m.DashboardSessionsPage })));
+const DashboardSavedPage = lazy(() => import('./pages/dashboard/DashboardSavedPage').then((m) => ({ default: m.DashboardSavedPage })));
+const DashboardNotificationsPage = lazy(() => import('./pages/dashboard/DashboardNotificationsPage').then((m) => ({ default: m.DashboardNotificationsPage })));
 
 const PageLoader: React.FC = () => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-3">
@@ -50,6 +59,7 @@ export const App: React.FC = () => {
       <ToastProvider>
         <AuthProvider>
           <BrowserRouter>
+            <AuthModal />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public & Member Site Layout */}
@@ -98,6 +108,25 @@ export const App: React.FC = () => {
                   <Route path="stale" element={<AdminStaleProfilesPage />} />
                   <Route path="activity" element={<AdminActivityPage />} />
                   <Route path="settings" element={<AdminSettingsPage />} />
+                </Route>
+
+                {/* Personal Dashboard Portal (Member, Alumni, Admin) */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={['member', 'alumni', 'admin']}>
+                      <DashboardLayout />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<DashboardOverviewPage />} />
+                  <Route path="directory" element={<DirectoryPage />} />
+                  <Route path="profile" element={<MyProfilePage />} />
+                  <Route path="settings" element={<AccountPage />} />
+                  <Route path="requests" element={<DashboardRequestsPage />} />
+                  <Route path="sessions" element={<DashboardSessionsPage />} />
+                  <Route path="saved" element={<DashboardSavedPage />} />
+                  <Route path="notifications" element={<DashboardNotificationsPage />} />
                 </Route>
 
                 {/* Catch-all */}

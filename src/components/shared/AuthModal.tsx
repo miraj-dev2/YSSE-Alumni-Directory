@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Modal } from './Modal';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -6,6 +7,7 @@ import { AuthLoginForm } from './AuthLoginForm';
 import { AuthRegisterForm } from './AuthRegisterForm';
 
 export const AuthModal: React.FC = () => {
+  const navigate = useNavigate();
   const {
     isAuthModalOpen,
     authModalMode,
@@ -26,9 +28,10 @@ export const AuthModal: React.FC = () => {
   const handleLogin = async (email: string, pass: string) => {
     setLoading(true);
     try {
-      await loginWithCredentials(email, pass);
+      const u = await loginWithCredentials(email, pass);
       success('Welcome Back', 'Logged in successfully.');
       closeAuthModal();
+      navigate(u?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err: any) {
       error('Sign In Failed', err.message || 'Invalid credentials.');
     } finally {
@@ -47,6 +50,7 @@ export const AuthModal: React.FC = () => {
       await registerUser(data);
       success('Account Created', 'Welcome to the YSSE Network!');
       closeAuthModal();
+      navigate('/dashboard');
     } catch (err: any) {
       error('Registration Failed', err.message || 'Could not create account.');
     } finally {
@@ -57,9 +61,10 @@ export const AuthModal: React.FC = () => {
   const handleGoogle = async () => {
     setLoading(true);
     try {
-      await loginWithGoogle();
+      const u = await loginWithGoogle();
       success('Google Sign In', 'Authenticated successfully with Google.');
       closeAuthModal();
+      navigate(u?.role === 'admin' ? '/admin' : '/dashboard');
     } catch {
       error('Auth Error', 'Google sign-in could not be completed.');
     } finally {

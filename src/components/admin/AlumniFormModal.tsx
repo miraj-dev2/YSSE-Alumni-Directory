@@ -35,7 +35,7 @@ export const AlumniFormModal: React.FC<AlumniFormModalProps> = ({
   const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm<FormValues>({
     resolver: zodResolver(alumniSchema),
     defaultValues: {
-      name: '', email: '', batch: 'Batch 8', wing: 'YSSE IT', currentRole: '',
+      name: '', email: '', batch: 'Batch 17', wing: 'Admin & HR Department', currentRole: '',
       organization: '', location: 'Dhaka, Bangladesh', linkedinUrl: '', isContactPublic: true, openToSessions: true,
     },
   });
@@ -50,7 +50,7 @@ export const AlumniFormModal: React.FC<AlumniFormModalProps> = ({
       });
     } else {
       reset({
-        name: '', email: '', batch: 'Batch 8', wing: 'YSSE IT', currentRole: '',
+        name: '', email: '', batch: 'Batch 17', wing: 'Admin & HR Department', currentRole: '',
         organization: '', location: 'Dhaka, Bangladesh', linkedinUrl: '', isContactPublic: true, openToSessions: true,
       });
     }
@@ -92,11 +92,11 @@ export const AlumniFormModal: React.FC<AlumniFormModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-[11px] font-mono uppercase text-[#9DB0A2] mb-1">Batch *</label>
-                <input {...register('batch')} placeholder="Batch 8" className="w-full bg-[#18251D] border border-[#2E4336] rounded px-3 py-2 text-xs text-[#EEF3E8] min-h-[44px]" />
+                <input {...register('batch')} placeholder="Batch 17" className="w-full bg-[#18251D] border border-[#2E4336] rounded px-3 py-2 text-xs text-[#EEF3E8] min-h-[44px]" />
               </div>
               <div>
                 <label className="block text-[11px] font-mono uppercase text-[#9DB0A2] mb-1">Wing *</label>
-                <input {...register('wing')} placeholder="YSSE IT" className="w-full bg-[#18251D] border border-[#2E4336] rounded px-3 py-2 text-xs text-[#EEF3E8] min-h-[44px]" />
+                <input {...register('wing')} placeholder="IT Department" className="w-full bg-[#18251D] border border-[#2E4336] rounded px-3 py-2 text-xs text-[#EEF3E8] min-h-[44px]" />
               </div>
             </div>
 

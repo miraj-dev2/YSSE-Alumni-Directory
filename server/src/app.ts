@@ -10,6 +10,8 @@ import { sessionsRouter } from './modules/sessions/sessions.routes.js';
 import { adminRouter } from './modules/admin/admin.routes.js';
 import { wingsRouter } from './modules/wings/wings.routes.js';
 import { talksRouter } from './modules/talks/talks.routes.js';
+import { notificationsRouter } from './modules/notifications/notifications.routes.js';
+import { dashboardRouter } from './modules/dashboard/dashboard.routes.js';
 import { notFound } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { ok } from './lib/apiResponse.js';
@@ -66,6 +68,8 @@ apiRouter.use('/sessions', sessionsRouter);
 apiRouter.use('/admin', adminRouter);
 apiRouter.use('/wings', wingsRouter);
 apiRouter.use('/talks', talksRouter);
+apiRouter.use('/notifications', notificationsRouter);
+apiRouter.use('/dashboard', dashboardRouter);
 
 app.use('/api', apiRouter);
 app.use('/auth', authRouter);
@@ -74,6 +78,8 @@ app.use('/sessions', sessionsRouter);
 app.use('/admin', adminRouter);
 app.use('/wings', wingsRouter);
 app.use('/talks', talksRouter);
+app.use('/notifications', notificationsRouter);
+app.use('/dashboard', dashboardRouter);
 
 // 404 & Global Error Handling
 app.use(notFound);

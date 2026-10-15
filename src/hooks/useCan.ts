@@ -23,7 +23,7 @@ const PERMISSION_MATRIX: Record<Permission, Record<UserRole, boolean>> = {
   request_session: {
     visitor: false,
     member: true,
-    alumni: false,
+    alumni: true,
     admin: false,
   },
   manage_own_profile: {
@@ -82,6 +82,7 @@ const PERMISSION_MATRIX: Record<Permission, Record<UserRole, boolean>> = {
   },
 };
 
+// Note: Every capability is enforced on the server per request. The frontend checks are UX only.
 export const useCan = (permission: Permission): boolean => {
   const { role } = useAuth();
   return PERMISSION_MATRIX[permission]?.[role] ?? false;

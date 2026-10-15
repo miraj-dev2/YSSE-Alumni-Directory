@@ -19,7 +19,7 @@ export const AdminStaleProfilesPage: React.FC = () => {
     mutationFn: (ids: string[]) => adminService.sendReminder(ids),
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['adminDashboardStats'] });
-      success('Reminders Dispatched', `Automated refresh emails sent to ${count} alumni.`);
+      success('Reminders Recorded', `Profile update reminders recorded for ${count} alumni.`);
       setSelectedIds([]);
     },
     onError: () => error('Action failed', 'Could not send reminders.'),

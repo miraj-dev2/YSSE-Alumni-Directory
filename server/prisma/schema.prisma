@@ -45,6 +45,8 @@ model User {
   profile         AlumniProfile?
   sessionRequests SessionRequest[]
   auditLogs       AuditLog[]
+  notifications   Notification[]
+  savedAlumni     SavedAlumni[]
 }
 
 model Wing {
@@ -79,6 +81,7 @@ model AlumniProfile {
   updatedAt       DateTime       @updatedAt
   sessionOffers   SessionOffer[]
   talks           AlumniTalk[]
+  savedBy         SavedAlumni[]
   @@index([status, batch])
   @@index([wingId])
   @@index([email])
@@ -144,3 +147,31 @@ model AuditLog {
   @@index([actorId])
   @@index([targetType, targetId])
 }
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}
+
+model SavedAlumni {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alumniId  String
+  alumni    AlumniProfile @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, alumniId])
+  @@index([userId])
+}
+

@@ -48,11 +48,19 @@ export const createMyProfile = async (
       bio: data.bio,
       story: data.story || null,
       isContactPublic: data.isContactPublic ?? false,
-      status: 'APPROVED',
+      photoUrl: data.photoUrl || null,
+      status: 'PENDING',
       source: 'SELF'
     },
     include: { wing: true, sessionOffers: true }
   });
+
+  if (data.photoUrl) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: data.photoUrl }
+    }).catch(() => {});
+  }
 
   return mapProfileToView(profile, { id: userId, role: 'MEMBER' });
 };
@@ -89,11 +97,20 @@ export const updateMyProfile = async (
         ...(data.bio !== undefined && { bio: data.bio }),
         ...(data.story !== undefined && { story: data.story || null }),
         ...(data.isContactPublic !== undefined && { isContactPublic: data.isContactPublic }),
+        ...(data.photoUrl !== undefined && { photoUrl: data.photoUrl || null }),
         status: newStatus,
         ...(profile.status === 'REJECTED' ? { rejectionReason: null } : {})
       },
       include: { wing: true, sessionOffers: true }
     }),
+    ...(data.photoUrl !== undefined
+      ? [
+          prisma.user.update({
+            where: { id: userId },
+            data: { avatarUrl: data.photoUrl || null }
+          })
+        ]
+      : []),
     ...(profile.status === 'APPROVED'
       ? [
           prisma.auditLog.create({

@@ -29,7 +29,9 @@ export const createProfileSchema = z.object({
     .or(z.literal('')),
   bio: z.string().trim().max(1000).optional(),
   story: z.string().trim().max(3000).optional().or(z.literal('')),
-  isContactPublic: z.boolean().default(false)
+  isContactPublic: z.boolean().default(false),
+  photoUrl: z.string().trim().optional().nullable(),
+  status: z.undefined({ invalid_type_error: 'Profile status cannot be assigned by user' })
 });
 
 export const updateProfileSchema = createProfileSchema.partial();

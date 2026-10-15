@@ -23,11 +23,24 @@ export const updateStatusSchema = z
     }
   );
 
-export const bulkStatusSchema = z.object({
-  ids: z.array(z.string().min(1)).min(1, 'At least one profile ID is required'),
-  status: z.enum(['PENDING', 'APPROVED', 'REJECTED'] as const),
-  reason: z.string().trim().optional()
-});
+export const bulkStatusSchema = z
+  .object({
+    ids: z.array(z.string().min(1)).min(1, 'At least one profile ID is required'),
+    status: z.enum(['PENDING', 'APPROVED', 'REJECTED'] as const),
+    reason: z.string().trim().optional()
+  })
+  .refine(
+    (data) => {
+      if (data.status === 'REJECTED') {
+        return Boolean(data.reason && data.reason.trim().length > 0);
+      }
+      return true;
+    },
+    {
+      message: 'A non-empty rejection reason is required when rejecting profiles',
+      path: ['reason']
+    }
+  );
 
 export const adminCreateAlumniSchema = createProfileSchema.extend({
   email: z.string().trim().email().toLowerCase(),

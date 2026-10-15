@@ -27,8 +27,8 @@ export const useCsvImport = () => {
 
   const downloadTemplate = () => {
     const template = 'name,email,batch,wing,currentRole,organization,location,linkedinUrl\n' +
-      'Tahmid Khan,tahmid.k@example.com,Batch 8,YSSE IT,Backend Engineer,Brain Station 23,Dhaka,https://linkedin.com/in/tahmid\n' +
-      'Sabrina Islam,sabrina.i@example.com,Batch 7,Marketing & PR,Digital Strategist,Grameenphone,Dhaka,https://linkedin.com/in/sabrina\n';
+      'Tahmid Khan,tahmid.k@example.com,Batch 17,IT Department,Backend Engineer,Brain Station 23,Dhaka,https://linkedin.com/in/tahmid\n' +
+      'Sabrina Islam,sabrina.i@example.com,Batch 16,Marketing & PR Department,Digital Strategist,Grameenphone,Dhaka,https://linkedin.com/in/sabrina\n';
     const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

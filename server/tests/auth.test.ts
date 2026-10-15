@@ -67,4 +67,28 @@ describe('Authentication Module', () => {
       select: { id: true, email: true, name: true, role: true, googleId: true }
     });
   });
+
+  it('rejects registration when client attempts to specify role (ADMIN or ALUMNI)', async () => {
+    const resAdmin = await request(app)
+      .post('/auth/register')
+      .send({
+        name: 'Attacker User',
+        email: 'attacker@example.com',
+        password: 'Password123!',
+        role: 'ADMIN'
+      });
+
+    expect(resAdmin.status).toBe(400);
+
+    const resAlumni = await request(app)
+      .post('/auth/register')
+      .send({
+        name: 'Attacker User 2',
+        email: 'attacker2@example.com',
+        password: 'Password123!',
+        role: 'ALUMNI'
+      });
+
+    expect(resAlumni.status).toBe(400);
+  });
 });

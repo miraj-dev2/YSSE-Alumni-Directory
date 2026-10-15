@@ -8,7 +8,7 @@ export const authService = {
       const u = res.data;
       if (!u) return null;
       const role: UserRole =
-        u.role === 'ADMIN' ? 'admin' : u.profile ? 'alumni' : 'member';
+        u.role === 'ADMIN' ? 'admin' : u.role === 'ALUMNI' ? 'alumni' : 'member';
 
       return {
         id: u.id,
@@ -51,8 +51,7 @@ export const authService = {
     await apiClient.post<any>('/auth/register', {
       name: data.name.trim(),
       email: data.email.trim().toLowerCase(),
-      password: data.password || '',
-      role: data.role.toUpperCase()
+      password: data.password || ''
     });
 
     const user = await this.getCurrentUser();

@@ -4,14 +4,12 @@ import { ok } from '../../lib/apiResponse.js';
 import { env } from '../../config/env.js';
 
 const COOKIE_NAME = 'token';
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
 const sendAuthResponse = async (res: Response, userId: string, token: string, status = 200) => {
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: SEVEN_DAYS_MS
+    sameSite: 'lax'
   });
 
   const fullUser = await authService.getCurrentUser(userId);

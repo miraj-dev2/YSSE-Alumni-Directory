@@ -7,7 +7,9 @@ import {
   getMe,
   createMe,
   updateMe,
-  uploadPhotoHandler
+  uploadPhotoHandler,
+  getSavedAlumniHandler,
+  toggleSaveAlumniHandler
 } from './alumni.controller.js';
 import {
   alumniQuerySchema,
@@ -27,6 +29,10 @@ alumniRouter.get('/me', authenticate, getMe);
 alumniRouter.post('/me', authenticate, validate({ body: createProfileSchema }), createMe);
 alumniRouter.put('/me', authenticate, validate({ body: updateProfileSchema }), updateMe);
 alumniRouter.post('/me/photo', authenticate, uploadLimiter, uploadPhoto, uploadPhotoHandler);
+
+// Saved Alumni routes (must precede /:id)
+alumniRouter.get('/saved', authenticate, getSavedAlumniHandler);
+alumniRouter.post('/:id/save', authenticate, toggleSaveAlumniHandler);
 
 // Public routes
 alumniRouter.get('/featured', optionalAuth, getFeatured);

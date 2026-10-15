@@ -47,6 +47,7 @@ export const MyProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | undefined>(undefined);
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState<Blob | null>(null);
   const [expertise, setExpertise] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [careerList, setCareerList] = useState<CareerEntry[]>([]);
@@ -57,13 +58,14 @@ export const MyProfilePage: React.FC = () => {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       name: '',
-      batch: 'Batch 2024',
-      wing: 'Tech & Innovation',
+      batch: 'Batch 17',
+      wing: 'Admin & HR Department',
       role: '',
       organization: '',
       city: 'Dhaka',
@@ -94,7 +96,7 @@ export const MyProfilePage: React.FC = () => {
     if (watchedValues.bio && watchedValues.bio.length > 20) score += 15;
     if (watchedValues.linkedinUrl) score += 10;
     if (photoPreview) score += 10;
-    if (expertise.length > 0) score += 5;
+    if (expertise.length > 0 || (watchedValues.story && watchedValues.story.length > 0)) score += 5;
     return Math.min(score, 100);
   }, [watchedValues, photoPreview, expertise]);
 
@@ -166,6 +168,10 @@ export const MyProfilePage: React.FC = () => {
 
         ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, targetSize, targetSize);
 
+        canvas.toBlob((blob) => {
+          if (blob) setSelectedPhotoFile(blob);
+        }, 'image/jpeg', 0.88);
+
         const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
         setPhotoPreview(resizedDataUrl);
         success('Photo processed', 'Profile photo cropped to 400x400px.');
@@ -214,15 +220,32 @@ export const MyProfilePage: React.FC = () => {
     if (!user) return;
     setSaving(true);
     try {
+      let savedPhotoUrl = photoPreview;
+
       if (profile) {
+        if (selectedPhotoFile) {
+          try {
+            const uploadedUrl = await alumniService.uploadPhoto(profile.id, selectedPhotoFile);
+            if (uploadedUrl) {
+              savedPhotoUrl = uploadedUrl;
+              setPhotoPreview(uploadedUrl);
+            }
+          } catch {
+            // fallback to photoPreview if multipart upload encounters an issue
+          }
+        }
+
         const updated = await alumniService.updateProfile(profile.id, {
           ...data,
-          photoUrl: photoPreview,
+          photoUrl: savedPhotoUrl ? savedPhotoUrl : null,
           expertise,
           career: careerList,
           sessionFormat: data.sessionFormat as SessionFormat,
         });
         setProfile(updated);
+        setPhotoPreview(updated.photoUrl || undefined);
+        setSelectedPhotoFile(null);
+        await updateUserAccount({ avatarUrl: updated.photoUrl || undefined }).catch(() => {});
         success(
           'Profile Saved',
           updated.approvalStatus === 'Pending'
@@ -234,13 +257,27 @@ export const MyProfilePage: React.FC = () => {
           userId: user.id,
           ...data,
           email: user.email,
-          photoUrl: photoPreview,
+          photoUrl: photoPreview || undefined,
           expertise,
           career: careerList,
           sessionFormat: data.sessionFormat as SessionFormat,
         });
+
+        if (selectedPhotoFile && created.id) {
+          try {
+            const uploadedUrl = await alumniService.uploadPhoto(created.id, selectedPhotoFile);
+            if (uploadedUrl) {
+              created.photoUrl = uploadedUrl;
+              setPhotoPreview(uploadedUrl);
+            }
+          } catch {
+            // fallback
+          }
+        }
+
         setProfile(created);
-        await updateUserAccount({ role: 'alumni' }).catch(() => {});
+        setSelectedPhotoFile(null);
+        await updateUserAccount({ avatarUrl: created.photoUrl || undefined }).catch(() => {});
         success('Profile Created', 'Your alumni profile has been submitted for Secretariat review.');
       }
     } catch {
@@ -362,7 +399,11 @@ export const MyProfilePage: React.FC = () => {
                 {photoPreview && (
                   <button
                     type="button"
-                    onClick={() => setPhotoPreview(undefined)}
+                    onClick={() => {
+                      setPhotoPreview(undefined);
+                      setSelectedPhotoFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = '';
+                    }}
                     className="text-xs text-status-rejected hover:underline"
                   >
                     Remove
@@ -405,33 +446,59 @@ export const MyProfilePage: React.FC = () => {
                 {...register('batch')}
                 className="input-base cursor-pointer"
               >
-                <option value="Batch 2024">Batch 2024</option>
-                <option value="Batch 2023">Batch 2023</option>
-                <option value="Batch 2022">Batch 2022</option>
-                <option value="Batch 2021">Batch 2021</option>
-                <option value="Batch 2020">Batch 2020</option>
-                <option value="Batch 2019">Batch 2019</option>
-                <option value="Batch 2018">Batch 2018</option>
+                {Array.from({ length: 17 }, (_, i) => 17 - i).map((b) => (
+                  <option key={b} value={`Batch ${b}`}>
+                    Batch {b}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <label htmlFor="input-wing" className="block text-xs font-semibold text-text mb-1">
-                YSSE Wing Role <span className="text-accent">*</span>
+                YSSE Department <span className="text-accent">*</span>
               </label>
               <select
                 id="input-wing"
-                {...register('wing')}
+                value={watchedValues.wing?.includes('IT') || watchedValues.wing?.includes('Wing') ? 'IT Department' : (watchedValues.wing || 'Admin & HR Department')}
+                onChange={(e) => setValue('wing', e.target.value)}
                 className="input-base cursor-pointer"
               >
-                <option value="Tech & Innovation">Tech & Innovation</option>
-                <option value="Marketing & PR">Marketing & PR</option>
-                <option value="Creative & Content">Creative & Content</option>
-                <option value="Operations & Logistics">Operations & Logistics</option>
-                <option value="Human Resources">Human Resources</option>
-                <option value="Finance & Sponsorship">Finance & Sponsorship</option>
+                <option value="Admin & HR Department">Admin & HR Department</option>
+                <option value="Marketing & PR Department">Marketing & PR Department</option>
+                <option value="Communication Department">Communication Department</option>
+                <option value="Content Writing Department">Content Writing Department</option>
+                <option value="Graphic Design Department">Graphic Design Department</option>
+                <option value="Video Editing Department">Video Editing Department</option>
+                <option value="Operations Management Department">Operations Management Department</option>
+                <option value="Business Development Department">Business Development Department</option>
+                <option value="IT Department">IT Department</option>
               </select>
             </div>
+
+            {(watchedValues.wing?.includes('IT') || watchedValues.wing?.includes('Wing')) && (
+              <div className="p-3 bg-surface-hover/60 border border-border rounded-md space-y-1.5">
+                <label htmlFor="input-it-wing" className="block text-xs font-semibold text-text">
+                  IT Department Wing <span className="text-accent">*</span>
+                </label>
+                <select
+                  id="input-it-wing"
+                  value={watchedValues.wing?.startsWith('IT: Wing') ? watchedValues.wing : 'IT Department'}
+                  onChange={(e) => setValue('wing', e.target.value)}
+                  className="input-base cursor-pointer bg-surface"
+                >
+                  <option value="IT Department">General IT Department</option>
+                  <option value="IT: Wing 1 — Web Development & CMS">Wing 1: Web Development & CMS</option>
+                  <option value="IT: Wing 2 — Software & App Engineering">Wing 2: Software & App Engineering</option>
+                  <option value="IT: Wing 3 — Systems Automation & DataOps">Wing 3: Systems Automation & DataOps</option>
+                  <option value="IT: Wing 4 — AI Integration & Cybersecurity">Wing 4: AI Integration & Cybersecurity</option>
+                  <option value="IT: Wing 5 — Tech Research & Innovation">Wing 5: Tech Research & Innovation</option>
+                </select>
+                <span className="text-[11px] text-muted block">
+                  Select your specialized technical wing within the IT Department.
+                </span>
+              </div>
+            )}
 
             <div>
               <label htmlFor="input-role" className="block text-xs font-semibold text-text mb-1">

@@ -2,7 +2,7 @@ import { prisma } from '../../lib/prisma.js';
 import { env } from '../../config/env.js';
 import { signToken } from '../../lib/jwt.js';
 import { verifyGoogleIdToken } from './googleVerify.js';
-import { autoClaimAlumniProfile, ensureAlumniProfile } from './claimProfile.js';
+import { autoClaimAlumniProfile } from './claimProfile.js';
 import { mapProfileToView } from '../../lib/publicProfile.js';
 import { AppError } from '../../lib/AppError.js';
 import { hashPassword, verifyPassword } from '../../lib/password.js';
@@ -63,11 +63,7 @@ export const registerWithCredentials = async (input: RegisterInput) => {
     }
   });
 
-  if (input.role === 'ALUMNI') {
-    await ensureAlumniProfile(user.id, user.email, input.name.trim());
-  } else {
-    await autoClaimAlumniProfile(user.id, user.email);
-  }
+  await autoClaimAlumniProfile(user.id, user.email);
   const token = signToken(user.id);
   return { user, token };
 };
