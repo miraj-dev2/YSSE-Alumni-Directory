@@ -10,7 +10,18 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, children }) => {
-  const { role, openAuthModal, logout } = useAuth();
+  const { role, isLoading, openAuthModal, logout } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8 space-y-3">
+        <div className="w-8 h-8 border-2 border-border-strong border-t-accent rounded-full animate-spin" />
+        <span className="font-mono text-[11px] uppercase text-muted tracking-wider">
+          Verifying session...
+        </span>
+      </div>
+    );
+  }
 
   // Visitor trying to access protected content
   if (role === 'visitor' && !allowedRoles.includes('visitor')) {

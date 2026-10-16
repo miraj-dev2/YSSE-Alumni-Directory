@@ -1,14 +1,22 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar } from 'lucide-react';
+import { ArrowRight, Calendar, RotateCw, AlertCircle } from 'lucide-react';
 import { AlumniProfile } from '../../types';
 import { Avatar } from '../shared/Avatar';
 
 interface SessionsProps {
   sessionsOffered: AlumniProfile[];
+  isLoading: boolean;
+  isError: boolean;
+  onRetry: () => void;
 }
 
-export const LandingSessionsSection: React.FC<SessionsProps> = ({ sessionsOffered }) => {
+export const LandingSessionsSection: React.FC<SessionsProps> = ({
+  sessionsOffered,
+  isLoading,
+  isError,
+  onRetry
+}) => {
   return (
     <section className="max-w-content mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between gap-4 mb-6">
@@ -26,7 +34,24 @@ export const LandingSessionsSection: React.FC<SessionsProps> = ({ sessionsOffere
         </Link>
       </div>
 
-      {sessionsOffered.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-surface border border-border rounded-card p-5 h-64 animate-pulse" />
+          ))}
+        </div>
+      ) : isError ? (
+        <div className="bg-surface border border-border rounded-card p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-muted text-xs">
+            <AlertCircle className="w-5 h-5 text-status-rejected shrink-0" />
+            <span>Failed to load active mentorship sessions.</span>
+          </div>
+          <button onClick={onRetry} className="btn-secondary !min-h-[36px] h-[36px] text-xs px-3.5 gap-1.5 shrink-0">
+            <RotateCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
+        </div>
+      ) : sessionsOffered.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {sessionsOffered.map((mentor) => (
             <div key={mentor.id} className="bg-surface border border-border rounded-card p-5 flex flex-col justify-between">

@@ -4,6 +4,7 @@ import {
   getFeatured,
   getStories,
   getAlumniById,
+  getPublicStats,
   getMe,
   createMe,
   updateMe,
@@ -35,6 +36,7 @@ alumniRouter.get('/saved', authenticate, getSavedAlumniHandler);
 alumniRouter.post('/:id/save', authenticate, toggleSaveAlumniHandler);
 
 // Public routes
+alumniRouter.get('/stats', publicListLimiter, getPublicStats);
 alumniRouter.get('/featured', optionalAuth, getFeatured);
 alumniRouter.get('/stories', optionalAuth, getStories);
 alumniRouter.get(

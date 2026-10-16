@@ -2,42 +2,34 @@ import { Request, Response, NextFunction } from 'express';
 import * as alumniService from './alumni.service.js';
 import * as myProfileService from './myProfile.service.js';
 import * as photoService from './photo.service.js';
+import { getPublicAlumniStats } from './alumniStats.service.js';
 import { ok } from '../../lib/apiResponse.js';
 import { AppError } from '../../lib/AppError.js';
 import { AlumniQueryInput } from './alumni.schema.js';
 
-export const getAlumni = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getPublicStats = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const stats = await getPublicAlumniStats();
+    ok(res, stats);
+  } catch (error) { next(error); }
+};
+
+export const getAlumni = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const query = req.query as unknown as AlumniQueryInput;
     const { data, meta } = await alumniService.getPublicAlumniList(query, req.user);
     ok(res, data, 200, meta);
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
-export const getFeatured = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getFeatured = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const featured = await alumniService.getFeaturedAlumni(req.user);
     ok(res, featured);
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
-export const getAlumniById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getAlumniById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const profile = await alumniService.getAlumniById(req.params.id, req.user);
     ok(res, profile);

@@ -33,17 +33,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>('login');
 
   useEffect(() => {
-    const isSessionActive = sessionStorage.getItem('ysse_session_active');
-    if (!isSessionActive) {
-      authService.logout().finally(() => {
-        setUser(null);
-        setIsLoading(false);
-      });
-      return;
-    }
-
     authService.getCurrentUser().then((currentUser) => {
-      if (!currentUser) sessionStorage.removeItem('ysse_session_active');
+      if (currentUser) {
+        sessionStorage.setItem('ysse_session_active', '1');
+      } else {
+        sessionStorage.removeItem('ysse_session_active');
+      }
       setUser(currentUser);
       setIsLoading(false);
     });

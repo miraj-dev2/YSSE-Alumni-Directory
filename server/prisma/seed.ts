@@ -29,23 +29,25 @@ async function main() {
 
   console.log('🌱 Seeding administrator & member accounts...');
   const adminEmail = 'admin@ysseglobal.org';
+  const adminPasswordHash = await hashPassword('Admin@ysse2026!');
   await prisma.user.upsert({
     where: { email: adminEmail },
-    update: { role: 'ADMIN', passwordHash: hashPassword('Admin@ysse2026!') },
-    create: { email: adminEmail, name: 'YSSE Administrator', role: 'ADMIN', passwordHash: hashPassword('Admin@ysse2026!') }
+    update: { role: 'ADMIN', passwordHash: adminPasswordHash },
+    create: { email: adminEmail, name: 'YSSE Administrator', role: 'ADMIN', passwordHash: adminPasswordHash }
   });
 
   const memberEmail = 'member@ysseglobal.org';
+  const memberPasswordHash = await hashPassword('Member@ysse2026!');
   await prisma.user.upsert({
     where: { email: memberEmail },
-    update: { role: 'MEMBER', passwordHash: hashPassword('Member@ysse2026!') },
-    create: { email: memberEmail, name: 'Demo YSSE Member', role: 'MEMBER', passwordHash: hashPassword('Member@ysse2026!') }
+    update: { role: 'MEMBER', passwordHash: memberPasswordHash },
+    create: { email: memberEmail, name: 'Demo YSSE Member', role: 'MEMBER', passwordHash: memberPasswordHash }
   });
 
   console.log('🌱 Seeding dummy alumni & session offers...');
   const wings = await prisma.wing.findMany();
   const defaultWingId = wings[0]?.id;
-  const alumniPassword = hashPassword('Alumni@ysse2026!');
+  const alumniPassword = await hashPassword('Alumni@ysse2026!');
 
   for (const d of DUMMY_ALUMNI) {
     const wingId = wings.find((w) => w.name === d.wingName)?.id || defaultWingId;

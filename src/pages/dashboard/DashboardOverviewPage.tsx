@@ -10,11 +10,8 @@ import { MemberDashboardView } from '../../components/dashboard/MemberDashboardV
 
 export const DashboardOverviewPage: React.FC = () => {
   const { user } = useAuth();
-  if (user?.role === 'admin') {
-    return <Navigate to="/admin" replace />;
-  }
-
-  const { refreshBadges } = useOutletContext<{ refreshBadges: () => void }>() || {};
+  const outletCtx = useOutletContext<{ refreshBadges: () => void }>();
+  const refreshBadges = outletCtx?.refreshBadges;
   const [data, setData] = useState<DashboardStatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,8 +31,14 @@ export const DashboardOverviewPage: React.FC = () => {
   }, [refreshBadges]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    if (user?.role !== 'admin') {
+      fetchStats();
+    }
+  }, [fetchStats, user?.role]);
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
 
   if (loading) {
     return (

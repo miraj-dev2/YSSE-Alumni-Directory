@@ -36,10 +36,15 @@ export const getAdminStats = async () => {
       },
       orderBy: { name: 'asc' }
     }),
-    prisma.alumniProfile.findMany({
-      where: { status: 'APPROVED' },
-      select: { reviewedAt: true, createdAt: true }
-    })
+    prisma.$queryRaw<{ month: string; count: number }[]>`
+      SELECT
+        to_char(COALESCE("reviewedAt", "createdAt"), 'YYYY-MM') AS month,
+        COUNT(*)::int AS count
+      FROM "AlumniProfile"
+      WHERE status = 'APPROVED'
+      GROUP BY to_char(COALESCE("reviewedAt", "createdAt"), 'YYYY-MM')
+      ORDER BY month ASC
+    `
   ]);
 
   const byBatch = batchGroups.map((g) => ({
@@ -52,19 +57,10 @@ export const getAdminStats = async () => {
     count: w._count.profiles
   }));
 
-  // Real growth grouped by month (YYYY-MM) using approved date (reviewedAt or createdAt)
-  const growthMap = new Map<string, number>();
-  for (const p of approvedProfiles) {
-    const d = p.reviewedAt || p.createdAt;
-    const yearMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    growthMap.set(yearMonth, (growthMap.get(yearMonth) || 0) + 1);
-  }
-
-  const sortedMonths = Array.from(growthMap.keys()).sort();
   let cumulativeCount = 0;
-  const growth = sortedMonths.map((month) => {
-    cumulativeCount += growthMap.get(month)!;
-    return { month, count: cumulativeCount };
+  const growth = approvedProfiles.map((row) => {
+    cumulativeCount += Number(row.count);
+    return { month: row.month, count: cumulativeCount };
   });
 
   return {

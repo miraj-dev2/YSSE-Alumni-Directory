@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import compression from 'compression';
 import path from 'path';
 import { env } from './config/env.js';
 import { authRouter } from './modules/auth/auth.routes.js';
@@ -45,12 +46,16 @@ app.use(
   })
 );
 
+app.use(compression());
 app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-// Static files for photo uploads
-app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR)));
+// Static files for photo uploads with 7-day immutable caching (filenames contain random unique hashes)
+app.use('/uploads', express.static(path.resolve(env.UPLOAD_DIR), {
+  maxAge: '7d',
+  immutable: true
+}));
 
 // Public health check
 app.get('/health', (_req, res) => {

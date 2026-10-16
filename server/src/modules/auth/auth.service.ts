@@ -5,7 +5,7 @@ import { verifyGoogleIdToken } from './googleVerify.js';
 import { autoClaimAlumniProfile } from './claimProfile.js';
 import { mapProfileToView } from '../../lib/publicProfile.js';
 import { AppError } from '../../lib/AppError.js';
-import { hashPassword, verifyPassword } from '../../lib/password.js';
+import { hashPassword, verifyPassword, needsRehash } from '../../lib/password.js';
 import { LoginInput, RegisterInput } from './auth.schema.js';
 
 /**
@@ -52,7 +52,7 @@ export const registerWithCredentials = async (input: RegisterInput) => {
 
   const isAdmin = env.ADMIN_EMAILS.includes(normalizedEmail);
   const targetRole = isAdmin ? 'ADMIN' : 'MEMBER';
-  const passwordHash = hashPassword(input.password);
+  const passwordHash = await hashPassword(input.password);
 
   const user = await prisma.user.create({
     data: {
@@ -87,9 +87,14 @@ export const loginWithCredentials = async (input: LoginInput) => {
     );
   }
 
-  const isValid = verifyPassword(input.password, user.passwordHash);
+  const isValid = await verifyPassword(input.password, user.passwordHash);
   if (!isValid) {
     throw AppError.unauthorized('Invalid email or password', 'INVALID_CREDENTIALS');
+  }
+
+  if (needsRehash(user.passwordHash)) {
+    const upgraded = await hashPassword(input.password);
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash: upgraded } }).catch(() => {});
   }
 
   const isAdmin = env.ADMIN_EMAILS.includes(normalizedEmail);

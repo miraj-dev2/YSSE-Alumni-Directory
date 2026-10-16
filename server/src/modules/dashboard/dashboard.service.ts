@@ -103,6 +103,17 @@ export const getDashboardStats = async (userId: string) => {
     take: 4
   });
 
+  const formattedRequests = recentRequests.map((r: any) => ({
+    ...r,
+    offer: r.offer ? {
+      ...r.offer,
+      alumni: r.offer.alumni ? {
+        ...r.offer.alumni,
+        wing: r.offer.alumni.wing?.name || r.offer.alumni.wing || ''
+      } : null
+    } : null
+  }));
+
   return {
     role: 'member',
     stats: {
@@ -112,7 +123,7 @@ export const getDashboardStats = async (userId: string) => {
       savedCount,
       unreadNotifications
     },
-    recentRequests,
+    recentRequests: formattedRequests,
     user: {
       id: user.id,
       name: user.name,

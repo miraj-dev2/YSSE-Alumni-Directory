@@ -109,7 +109,12 @@ export const MemberDashboardView: React.FC<Props> = ({ data }) => {
                   </div>
                   <div>
                     <h4 className="text-xs font-semibold text-[#EEF3E8]">{req.offer?.alumni?.name}</h4>
-                    <p className="text-[11px] text-[#9DB0A2]">{req.offer?.topic || req.offer?.title || 'Mentorship'} &bull; Wing: {req.offer?.alumni?.wing}</p>
+                    <p className="text-[11px] text-[#9DB0A2]">
+                      {req.offer?.topic || req.offer?.title || 'Mentorship'} &bull; Wing:{' '}
+                      {typeof req.offer?.alumni?.wing === 'object'
+                        ? req.offer?.alumni?.wing?.name
+                        : req.offer?.alumni?.wing || 'General'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

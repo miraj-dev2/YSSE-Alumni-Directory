@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { alumniService } from '../services/alumniService';
 import { sessionService } from '../services/sessionService';
-import { AlumniProfile } from '../types';
+import { useInView } from '../hooks/useInView';
 import { FaqAccordion } from '../components/shared/FaqAccordion';
 import { LandingHeroSection } from '../components/landing/LandingHeroSection';
 import { LandingStatsSection } from '../components/landing/LandingStatsSection';
@@ -12,45 +13,76 @@ import { LandingSessionsSection } from '../components/landing/LandingSessionsSec
 import { LandingGuideSection } from '../components/landing/LandingGuideSection';
 
 export const LandingPage: React.FC = () => {
-  const [featuredAlumni, setFeaturedAlumni] = useState<AlumniProfile[]>([]);
-  const [sessionsOffered, setSessionsOffered] = useState<AlumniProfile[]>([]);
-  const [stories, setStories] = useState<AlumniProfile[]>([]);
-  const [allAlumni, setAllAlumni] = useState<AlumniProfile[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { ref: storiesRef, isInView: isStoriesInView } = useInView({ rootMargin: '300px' });
+  const { ref: sessionsRef, isInView: isSessionsInView } = useInView({ rootMargin: '300px' });
 
-  useEffect(() => {
-    Promise.all([
-      alumniService.getFeaturedAlumni(),
-      alumniService.getSuccessStories(),
-      sessionService.getSessionsOffered(),
-      alumniService.getAlumni({ pageSize: 50 }),
-    ]).then(([featured, storiesRes, sessions, directoryRes]) => {
-      setFeaturedAlumni(featured);
-      setStories(storiesRes);
-      setSessionsOffered(sessions.slice(0, 3));
-      setAllAlumni(directoryRes.data);
-      setTotalCount(directoryRes.total || directoryRes.data.length);
-      setLoading(false);
-    });
-  }, []);
+  // 1. Live Aggregate Directory Stats (calls fast /api/alumni/stats endpoint)
+  const statsQuery = useQuery({
+    queryKey: ['landing', 'stats'],
+    queryFn: () => alumniService.getLandingStats()
+  });
 
-  const stats = useMemo(() => {
-    const total = totalCount || allAlumni.length;
-    const batchesCount = new Set(allAlumni.map((a) => a.batch).filter(Boolean)).size;
-    const companiesCount = new Set(allAlumni.map((a) => a.organization).filter(Boolean)).size;
-    const countriesCount = new Set(allAlumni.map((a) => a.country).filter(Boolean)).size;
-    return { total, batchesCount, companiesCount, countriesCount };
-  }, [allAlumni, totalCount]);
+  // 2. Featured Alumni for Carousel
+  const featuredQuery = useQuery({
+    queryKey: ['landing', 'featured'],
+    queryFn: () => alumniService.getFeaturedAlumni()
+  });
+
+  // 3. Success Stories & Reflections (deferred until near viewport)
+  const storiesQuery = useQuery({
+    queryKey: ['landing', 'stories'],
+    queryFn: () => alumniService.getSuccessStories(),
+    enabled: isStoriesInView
+  });
+
+  // 4. Mentorship Sessions Offered (deferred until near viewport)
+  const sessionsQuery = useQuery({
+    queryKey: ['landing', 'sessions'],
+    queryFn: async () => {
+      const list = await sessionService.getSessionsOffered();
+      return list.slice(0, 3);
+    },
+    enabled: isSessionsInView
+  });
 
   return (
     <div className="space-y-16 sm:space-y-24 py-8 sm:py-16">
       <LandingHeroSection />
-      <LandingStatsSection stats={stats} />
+
+      <LandingStatsSection
+        stats={statsQuery.data}
+        isLoading={statsQuery.isLoading}
+        isError={statsQuery.isError}
+        onRetry={() => statsQuery.refetch()}
+      />
+
       <LandingFindSection />
-      <LandingCarouselSection loading={loading} featuredAlumni={featuredAlumni} />
-      <LandingStoriesSection stories={stories} />
-      <LandingSessionsSection sessionsOffered={sessionsOffered} />
+
+      <LandingCarouselSection
+        featuredAlumni={featuredQuery.data || []}
+        isLoading={featuredQuery.isLoading}
+        isError={featuredQuery.isError}
+        onRetry={() => featuredQuery.refetch()}
+      />
+
+      <div ref={storiesRef}>
+        <LandingStoriesSection
+          stories={storiesQuery.data || []}
+          isLoading={!isStoriesInView || storiesQuery.isLoading}
+          isError={storiesQuery.isError}
+          onRetry={() => storiesQuery.refetch()}
+        />
+      </div>
+
+      <div ref={sessionsRef}>
+        <LandingSessionsSection
+          sessionsOffered={sessionsQuery.data || []}
+          isLoading={!isSessionsInView || sessionsQuery.isLoading}
+          isError={sessionsQuery.isError}
+          onRetry={() => sessionsQuery.refetch()}
+        />
+      </div>
+
       <LandingGuideSection />
 
       <section className="max-w-content mx-auto px-4 sm:px-6 lg:px-8">

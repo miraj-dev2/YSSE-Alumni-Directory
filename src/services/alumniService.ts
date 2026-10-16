@@ -31,12 +31,8 @@ export const alumniService = {
   },
 
   async getSuccessStories(): Promise<AlumniProfile[]> {
-    try {
-      const res = await apiClient.get<any[]>('/alumni/stories');
-      return (res.data || []).map(mapBackendAlumniToFrontend);
-    } catch {
-      return [];
-    }
+    const res = await apiClient.get<any[]>('/alumni/stories');
+    return (res.data || []).map(mapBackendAlumniToFrontend);
   },
 
   async getAlumniById(id: string): Promise<AlumniProfile | null> {
@@ -75,16 +71,11 @@ export const alumniService = {
     }
 
     const payload = {
-      name: profileData.name,
-      batch: isNaN(rawBatch) ? new Date().getFullYear() : rawBatch,
-      wingId: targetWingId,
-      currentRole: profileData.role,
-      organization: profileData.organization,
+      name: profileData.name, batch: isNaN(rawBatch) ? new Date().getFullYear() : rawBatch,
+      wingId: targetWingId, currentRole: profileData.role, organization: profileData.organization,
       location: `${profileData.city || 'Dhaka'}, ${profileData.country || 'Bangladesh'}`,
-      linkedinUrl: profileData.linkedinUrl || undefined,
-      bio: profileData.bio,
-      story: profileData.story || undefined,
-      isContactPublic: profileData.isEmailPublic ?? false,
+      linkedinUrl: profileData.linkedinUrl || undefined, bio: profileData.bio,
+      story: profileData.story || undefined, isContactPublic: profileData.isEmailPublic ?? false,
       photoUrl: profileData.photoUrl || undefined
     };
 
@@ -145,5 +136,9 @@ export const alumniService = {
       fields: Array.from(new Set(alumni.map((a: any) => a.currentRole).filter(Boolean))).sort()
     };
   },
-  getDistinctFilterOptions() { return this.getFilterOptions(); }
+  getDistinctFilterOptions() { return this.getFilterOptions(); },
+  async getLandingStats() {
+    const res = await apiClient.get<any>('/alumni/stats');
+    return res.data || { total: 0, batchesCount: 0, companiesCount: 0, countriesCount: 0 };
+  }
 };
